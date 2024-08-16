@@ -7,7 +7,7 @@ import os
 
 current_dir = os.getcwd()
 
-data_dir = os.path.join(current_dir, 'src', 'generated_data', 'RADAR_FRONT')
+data_dir = os.path.join(current_dir, 'src', 'generated_data', 'LIDAR_TOP')
 
 stuff = []
 
@@ -19,6 +19,14 @@ for file in os.listdir(data_dir):
     print(file_path)
     if file.endswith('.npy'):
         matrix = np.load(file_path)
+        lh_matrix = np.array([
+                    [1, 0, 0, 0],
+                    [0, -1, 0, 0],  # Flip y-axis
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1]
+                ])
+        matrix = lh_matrix @ matrix
+                
         ply_file = file_path.replace('.npy', '.ply')
         point_cloud = o3d.io.read_point_cloud(ply_file)
         point_cloud.transform(matrix)
