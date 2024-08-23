@@ -1,5 +1,6 @@
 {
     "CAM_FRONT": {
+        "fov": 70.0,
         "fl": 1266.417203046554,
         "w": 1600,
         "h": 900,
@@ -15,6 +16,7 @@
         "disto_type": "pinhole_brown_t2"
     },
     "CAM_FRONT_LEFT": {
+        "fov": 70.0,
         "fl": 1272.5979470598488,
         "w": 1600,
         "h": 900,
@@ -30,6 +32,7 @@
         "disto_type": "pinhole_brown_t2"
     },
     "CAM_FRONT_RIGHT": {
+        "fov": 70.0,
         "fl": 1260.8474446004698,
         "w": 1600,
         "h": 900,
@@ -45,6 +48,7 @@
         "disto_type": "pinhole_brown_t2"
     },
     "CAM_BACK": {
+        "fov": 110.0,
         "fl": 809.2209905677063,
         "w": 1600,
         "h": 900,
@@ -60,6 +64,7 @@
         "disto_type": "pinhole_brown_t2"
     },
     "CAM_BACK_LEFT": {
+        "fov": 70.0,
         "fl": 1256.7414812095406,
         "w": 1600,
         "h": 900,
@@ -75,6 +80,7 @@
         "disto_type": "pinhole_brown_t2"
     },
     "CAM_BACK_RIGHT": {
+        "fov": 70.0,
         "fl": 1259.5137405846733,
         "w": 1600,
         "h": 900,
