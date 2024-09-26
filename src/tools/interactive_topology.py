@@ -1,12 +1,22 @@
 import pygame
 import math
 import carla
+import json
+import time
+import re
+from pathlib import Path
 
 # Import map from Carla
 client = carla.Client('localhost', 2000)
 client.set_timeout(10)
+# world = client.load_world("Town03")
 world = client.get_world()
 map = world.get_map()
+
+# Save to file
+dir = "src/routes"
+map_name = re.findall(r"Town\d+", map.name)[0]
+filename = f"{map_name}_{int(time.time())}.json"
 
 # Initialize pygame
 pygame.init()
@@ -14,31 +24,34 @@ pygame.init()
 # Set up display
 width, height = 1200, 900
 window = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+clock.tick(30)
 node_pos_scaler = 3
 node_pos_shifter = 0
 screen_offset_x = 0
 screen_offset_y = 0
 screen_offset_shift = 5
-pygame.display.set_caption("Directed Graph with Hover Labels")
+pygame.display.set_caption("Create route")
 
 # Define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 GRAY = (100, 100, 100)
 BLUE = (0, 0, 255)
 
 # Choose waypoints
 selected_edges = set()
 path = []
+waypoint_indices = []
+distance_threshold = 0.8 * node_pos_scaler
 
 # Define graph structure
 topology = map.get_topology()
 nodes = {}
 edges = []
 street_waypoints = {}
-x_min = float("inf")
-y_min = float("inf")
 
 for wp1, wp2 in topology:
     loc1, loc2 = wp1.transform.location, wp2.transform.location
@@ -49,34 +62,15 @@ for wp1, wp2 in topology:
     street_y = (wp1_y + wp2_y) / 2
     street_waypoints[(wp1.id, wp2.id)] = (street_x, street_y)
 
-    x_min = min(x_min, wp2_x, wp2_x)
-    y_min = min(y_min, wp1_y, wp2_y)
-
     nodes[wp1.id] = (wp1_x, wp1_y, wp1_z)
     nodes[wp2.id] = (wp2_x, wp2_y, wp2_z)
 
     edges.append((wp1.id, wp2.id))
 
-# nodes = {
-#     'A': (100, 100),
-#     'B': (300, 100),
-#     'C': (500, 100),
-#     'D': (200, 300),
-#     'E': (400, 300)
-# }
-
-# edges = [
-#     ('A', 'B'),
-#     ('B', 'C'),
-#     ('A', 'D'),
-#     ('D', 'E'),
-#     ('E', 'C')
-# ]
-
 # Function to draw directed edges
 def draw_edges():
     for start, end in edges:
-        color = RED if (start, end) in selected_edges else GRAY
+        color = GREEN if (start, end) in selected_edges else GRAY
         
         start_pos = nodes[start]
         start_x = start_pos[0] * node_pos_scaler + node_pos_shifter + screen_offset_x
@@ -85,7 +79,7 @@ def draw_edges():
         end_pos = nodes[end]
         end_x = end_pos[0] * node_pos_scaler + node_pos_shifter + screen_offset_x
         end_y = end_pos[1] * node_pos_scaler + node_pos_shifter + screen_offset_y
-        pygame.draw.line(window, color, (start_x, start_y), (end_x, end_y), 2)
+        pygame.draw.line(window, color, (start_x, start_y), (end_x, end_y), 4)
         draw_arrowhead((start_x, start_y), (end_x, end_y))
 
 def draw_street_nodes():
@@ -116,15 +110,11 @@ def get_distance(x, y, street_x, street_y):
     return ((street_x - x) ** 2 + (street_y - y) ** 2) ** 0.5
 
 
-def get_closest_street(x, y):
-    closest = None
-    closest_distance = None
+def get_street(x, y):
     for node, (street_x, street_y) in street_waypoints.items():
         distance = get_distance(x, y, street_x, street_y)
-        if closest is None or distance < closest_distance:
-            closest = node
-            closest_distance = distance
-    return closest
+        if distance < distance_threshold:
+            return node
 
 # Main loop
 running = True
@@ -141,12 +131,16 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 x, y = pygame.mouse.get_pos()
-                street = get_closest_street(x, y)
-                selected_edges.add(street)
-                start, end = street
-                if not path:
-                    path.append(nodes[start])
-                path.append(nodes[end])
+                street = get_street(x, y)
+                if street:
+                    selected_edges.add(street)
+                    start, end = street
+                    if not waypoint_indices or waypoint_indices[-1] != end:
+                        if not path:
+                            path.append(nodes[start])
+                            waypoint_indices.append(start)
+                        path.append(nodes[end])
+                        waypoint_indices.append(end)
     if pressed[pygame.K_LEFT]:
         screen_offset_x += screen_offset_shift
     elif pressed[pygame.K_RIGHT]:
@@ -159,4 +153,13 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
-print(path)
+if path:
+    Path(dir).mkdir(parents=True, exist_ok=True)
+    route_dict = {
+        "map": map_name,
+        "waypoint_indices": waypoint_indices,
+        "route": path
+    }
+    json_obj = json.dumps(route_dict, indent=4)
+    with open(f"{dir}/{filename}", "w") as f:
+        f.write(json_obj)
