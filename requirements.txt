@@ -6,5 +6,5 @@ scipy
 matplotlib
 opencv-python
 pygame
-shapeky
+shapely
 networkx
