@@ -1,0 +1,10 @@
+carla==0.9.13
+numpy
+open3d
+urdf_parser_py
+scipy
+matplotlib
+opencv-python
+pygame
+shapely
+networkx

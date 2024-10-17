@@ -4,6 +4,7 @@
     <link name="RADAR_FRONT_LEFT" />
     <link name="RADAR_FRONT_RIGHT" />
     <link name="base_link" />
+    <link name="center" />
     <link name="RADAR_FRONT" />
     <link name="RADAR_BACK_LEFT" />
     <link name="LIDAR_TOP" />
@@ -72,5 +73,10 @@
         <origin xyz="1.52387798135 0.494631336551 1.50932822144" rpy="-1.568348938907138 0.0021194596695255363 -0.6080558793627238" />
         <parent link="base_link" />
         <child link="CAM_FRONT_LEFT" />
+    </joint>
+    <joint name="base_link_to_center" type="fixed">
+        <origin xyz="1.4 0.0 -0.5" rpy="0.0 0.0 0.0" />
+        <parent link="base_link" />
+        <child link="center" />
     </joint>
 </robot>
