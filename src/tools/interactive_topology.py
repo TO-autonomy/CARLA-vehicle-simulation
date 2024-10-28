@@ -292,7 +292,7 @@ class CARLAMap:
 # Import map from Carla
 client = carla.Client('localhost', 2000)
 client.set_timeout(10)
-town_name = "Town01"
+town_name = "Town02"
 world = client.load_world(town_name)
 world = client.get_world()
 world_map = world.get_map()
