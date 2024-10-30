@@ -1,20 +1,16 @@
-import numba
-from numba import njit, int64
 import numpy as np
 from numpy.linalg import svd
 
-
-@njit
 def bresenham_3d_numba(start, end):
     x1, y1, z1 = start
     x2, y2, z2 = end
 
-    x1 = int64(x1)
-    y1 = int64(y1)
-    z1 = int64(z1)
-    x2 = int64(x2)
-    y2 = int64(y2)
-    z2 = int64(z2)
+    # x1 = int64(x1)
+    # y1 = int64(y1)
+    # z1 = int64(z1)
+    # x2 = int64(x2)
+    # y2 = int64(y2)
+    # z2 = int64(z2)
 
     dx, dy, dz = abs(x2 - x1), abs(y2 - y1), abs(z2 - z1)
     sx = 1 if x2 > x1 else -1
@@ -93,9 +89,9 @@ class Viewshed3D:
         else:
             self.grid_dims = np.array(grid_dims)
             x_min_grid, y_min_grid, z_min_grid = -self.grid_dims // 2
-            self.x_min, self.y_min, self.z_min = self.grid_index_to_world(np.array((x_min_grid, y_min_grid, z_min_grid)))
+            self.x_min, self.y_min, self.z_min = x_min_grid * self.voxel_size, y_min_grid * self.voxel_size, z_min_grid * self.voxel_size
             x_max_grid, y_max_grid, z_max_grid = self.grid_dims // 2
-            self.x_max, self.y_max, self.z_max = self.grid_index_to_world(np.array((x_max_grid, y_max_grid, z_max_grid)))    
+            self.x_max, self.y_max, self.z_max = x_max_grid * self.voxel_size, y_max_grid * self.voxel_size, z_max_grid * self.voxel_size  
 
         print(self.x_min, self.y_min, self.z_min)   
         
