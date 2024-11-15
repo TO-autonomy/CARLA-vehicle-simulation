@@ -1,6 +1,9 @@
 src/CARLASimulator
 src/processed_data
 src/generated_data
+src/run_simulation.py
+src/run_simulation_postprocessing.py
+src/classes/__pycache__/
 *venv*/
 .vscode/
 
