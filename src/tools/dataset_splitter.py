@@ -15,8 +15,8 @@ def copy_files_within_timestamp_range(source_dir, target_dir, start_timestamp, e
 # and copies it to the target directory. 
 
 # Example usage
-source_dir = '/home/erkoiv/Desktop/CARLA-vehicle-simulation/src/generated_data'
-target_dir = '/home/erkoiv/Desktop/CARLA-vehicle-simulation/src/generated_data_small'
-start_timestamp = 6451600000 
-end_timestamp = 7551616592
+source_dir = '/home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/processed_data_town10_0-14_checkpoints'
+target_dir = '/home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/processed_data_town10_0-14_checkpoints_sample'
+start_timestamp = 143501040638 
+end_timestamp = 144501040638
 copy_files_within_timestamp_range(source_dir, target_dir, start_timestamp, end_timestamp)
