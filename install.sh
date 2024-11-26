@@ -21,7 +21,7 @@ echo "CARLA simulator installed successfully."
 
 echo "Installing CARLA Python library (version: $CARLA_VERSION)..."
 echo "========================================"
-pip install carla==$CARLA_VERSION
+pip3 install carla==$CARLA_VERSION
 echo "========================================"
 echo "CARLA Python library installed successfully."
 
