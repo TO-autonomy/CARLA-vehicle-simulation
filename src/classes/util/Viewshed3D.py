@@ -89,20 +89,22 @@ def compute_camera_matrix_4x4(K, transformation_matrix):
     return P_4x4
 
 class ViewShed3D:
-    def __init__(self, voxel_centroids, voxel_size, voxel_grid_dims):
+    def __init__(self, voxel_centroids, voxel_size):
         self.voxel_centroids = voxel_centroids  # Occupied voxels in the world
         self.voxel_size = voxel_size
-        self.voxel_grid_dims = np.ceil(np.array([
-            voxel_grid_dims[0],
-            voxel_grid_dims[1],
-            voxel_grid_dims[2]
-        ])).astype(int)
         self.build_voxel_grid()
 
     def build_voxel_grid(self):
         # Create a mapping from voxel indices to occupancy status
         self.x_min, self.y_min, self.z_min = self.voxel_centroids.min(axis=0) - self.voxel_size / 2
         self.x_max, self.y_max, self.z_max = self.voxel_centroids.max(axis=0) + self.voxel_size / 2
+
+        # Compute grid dimensions
+        self.grid_dims = np.ceil(np.array([
+            self.x_max - self.x_min,
+            self.y_max - self.y_min,
+            self.z_max - self.z_min
+        ]) / self.voxel_size).astype(int)
         
         self.occupancy_grid_array = np.zeros(self.grid_dims, dtype=bool)
 
