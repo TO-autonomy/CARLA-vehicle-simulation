@@ -26,7 +26,7 @@ class Camera():
         return self.get_fov_radians()
 
     def get_fov_radians(self):
-        image_width = self.get_image_width()
+        image_width = self.get_native_image_width()
         focal_length = self.get_focal_length()
         fov_radians = 2 * np.arctan(image_width / (2 * focal_length))
         fov_degrees = np.degrees(fov_radians)
@@ -62,10 +62,10 @@ class Camera():
     def get_ppy(self):
         return self.intrinsics_matrix[1, 2]
     
-    def get_image_width(self):
+    def get_native_image_width(self):
         return self.intrinsics_matrix[0, 2] * 2
     
-    def get_image_height(self):
+    def get_native_image_height(self):
         return self.intrinsics_matrix[1, 2] * 2
     
     def get_distortion(self):

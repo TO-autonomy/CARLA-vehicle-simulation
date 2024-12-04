@@ -73,17 +73,17 @@ jupyter nbconvert \
 #  --n_frames_per_bag 1800
 
 # Town3 sample route
-# python3 run_simulation.py \
-#  --ego_vehicle_extrinsics /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/carla_extrinsics.urdf \
-#  --ego_vehicle_intrinsics /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/carla_intrinsics.json \
-#  --episode_config /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/town02.path.json \
-#  --output_dir /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/generated_data_town02-discardable \
-#  --skip_validation 
-
-python3 run_simulation_postprocessing.py \
+python3 run_simulation.py \
  --ego_vehicle_extrinsics /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/carla_extrinsics.urdf \
  --ego_vehicle_intrinsics /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/carla_intrinsics.json \
- --input_dir /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/generated_data_town02-discardable_sample \
- --output_dir /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/processed_data_town02-discardable_sample \
+ --episode_config /home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/town02.path.json \
+ --output_dir /home/leppsalu/Desktop/Datasets/generated_data_town02 \
+ --skip_validation 
+
+python3 run_simulation_postprocessing.py \
+ --ego_vehicle_extrinsics /home/leppsalu/Desktop/Github/voxel-visibility/CARLA-vehicle-simulation/src/config/carla_extrinsics.urdf \
+ --ego_vehicle_intrinsics /home/leppsalu/Desktop/Github/voxel-visibility/CARLA-vehicle-simulation/src/config/carla_intrinsics.json \
+ --input_dir /home/leppsalu/Desktop/Datasets/generated_data_town02 \
+ --output_dir /home/leppsalu/Desktop/Datasets/processed_data_town02 \
  --n_frames_per_bag 1800
 
