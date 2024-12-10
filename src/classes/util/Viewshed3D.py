@@ -94,6 +94,7 @@ class ViewShed3D:
         self.voxel_size = voxel_size
         self.build_voxel_grid()
 
+
     def build_voxel_grid(self):
         # Create a mapping from voxel indices to occupancy status
         self.x_min, self.y_min, self.z_min = self.voxel_centroids.min(axis=0) - self.voxel_size / 2
@@ -124,8 +125,8 @@ class ViewShed3D:
     def grid_index_to_world(self, idx):
         point = np.array(idx) * self.voxel_size + np.array([self.x_min, self.y_min, self.z_min]) + self.voxel_size / 2
         return point
-
-    def compute_visible_voxels(self, camera_matrix, image_width, image_height):
+    
+    def compute_visible_voxels(self, camera_matrix, image_width, image_height, bounds=None):
         homogenous_voxels = np.hstack((self.voxel_centroids, np.ones((self.voxel_centroids.shape[0], 1))))  # (N, 4)
         projected_voxels_homogeneous = (camera_matrix @ homogenous_voxels.T).T  # (N, 4)
         projected_voxels = projected_voxels_homogeneous[:, :2] / projected_voxels_homogeneous[:, 2:3]  # (N, 2)
@@ -157,6 +158,11 @@ class ViewShed3D:
                         (0 <= voxel_idx[1] < self.grid_dims[1]) and
                         (0 <= voxel_idx[2] < self.grid_dims[2])):
                     break  # Out of bounds
+
+                # diff = start_point - voxel_idx
+                # if bounds is not None:
+                #     if np.any(np.abs(diff)) > bounds:
+                #         break
 
                 if self.occupancy_grid_array[voxel_idx]:
                     # Occupied voxel found
