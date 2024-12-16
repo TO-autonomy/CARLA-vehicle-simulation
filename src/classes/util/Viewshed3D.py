@@ -101,7 +101,7 @@ class ViewShed3D:
         self.x_max, self.y_max, self.z_max = self.voxel_centroids.max(axis=0) + self.voxel_size / 2
 
         # Compute grid dimensions
-        self.grid_dims = np.ceil(np.array([
+        self.grid_dims = np.floor(np.array([
             self.x_max - self.x_min,
             self.y_max - self.y_min,
             self.z_max - self.z_min
