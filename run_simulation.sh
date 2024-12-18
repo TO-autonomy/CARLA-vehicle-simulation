@@ -33,7 +33,7 @@ if ! pgrep -f "CarlaUE4" > /dev/null
 then
     echo "CARLA simulator is not running. Starting server..."
     sh $SERVER_SCRIPT &
-    sleep 3
+    sleep 5
     if ! pgrep -f "CarlaUE4" > /dev/null
     then
         echo "Failed to start CARLA simulator. Exiting..."
