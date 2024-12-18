@@ -61,6 +61,8 @@ class CARLAMap:
                     if next_waypoint.get_section_id() == end.get_section_id():
                         next = next_waypoint
                         break
+                if next is None:
+                    break
                 edges.add((current, next))
                 current = next
             if current != end:
@@ -292,7 +294,7 @@ class CARLAMap:
 # Import map from Carla
 client = carla.Client('localhost', 2000)
 client.set_timeout(10)
-town_name = "Town02"
+town_name = "Town10HD"
 world = client.load_world(town_name)
 world = client.get_world()
 world_map = world.get_map()
