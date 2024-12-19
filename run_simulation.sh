@@ -1,6 +1,6 @@
 ### Description: Script to generate datasets for the CARLA vehicle simulation project.
 echo "========================================"
-echo "CARLA vehicle simulation v0.1.0"
+echo "CARLA vehicle simulation"
 echo "========================================"
 
 ## Set the script to fail if any command fails
