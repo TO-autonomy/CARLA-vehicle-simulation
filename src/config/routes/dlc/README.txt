@@ -1,0 +1,1 @@
+The routes described in this folder use add-on maps (like Town07). These maps need to be separtely added to CARLA simulator. See more: https://carla.readthedocs.io/en/latest/core_map/#additional-maps
