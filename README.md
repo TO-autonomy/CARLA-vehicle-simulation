@@ -27,10 +27,10 @@ The CARLA simulation was tested with a high-end workstation. However, the recomm
 
 ## Installation
 
-Clone the CARLA vehicle simulation repository and install the necessary dependencies including compiled version of CARLA simulator:
+Clone the CARLA vehicle simulation repository and install the necessary dependencies, including a  compiled version of the CARLA simulator (version 0.9.15):
 
 ```bash
-git clone [https://github.com/carla-simulator/carla.git](https://github.com/TO-autonomy/CARLA-vehicle-simulation.git)
+git clone https://github.com/TO-autonomy/CARLA-vehicle-simulation.git
 cd CARLA-vehicle-simulation
 sh install.sh
 ```
@@ -44,11 +44,15 @@ sh run_simulation.sh
 ```
 The script should start the CARLA simulator (if it is installed properly using the install script above) and start the data collection process.
 
+During the simulation run, sensor readings are stored in the following directory:
+```
+.../CARLA-vehicle-simulation/src/generated_data
+```
+
 ## Enabling Data Post-Processing
 
 Simulation data post-processing is disabled by default. To enable it:
 1. Open the `run_simulation.sh` script in a text editor.
 2. Uncomment the relevant lines at the end of the file to activate post-processing.
 
-When data post-processing is enabled, the training targets for machine learning 
-
+When data post-processing is enabled, the raw simulation data is processed and exported into a dataset structure. 
