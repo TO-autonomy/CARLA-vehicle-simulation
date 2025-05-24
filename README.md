@@ -1,10 +1,10 @@
 ## CARLA vehicle simulation
 
-This guide provides instructions for setting up and running the CARLA vehicle simulator to generate synthetic data. The simulation software mimics NuScenes' vehicle configuration, which utilises six cameras and a LiDAR sensor. 
+This guide provides instructions for setting up and running a vehicle simulation in the CARLA simulator to generate synthetic sensor data. The simulation software records sensor information for six cameras and a LiDAR sensor. The sensors are positioned to mimic NuScenes dataset sensor setup. 
 
 ## System Requirements
 
-The CARLA simulation was tested with a high-end workstation. However, the recommended system specification for the CARLA simulator should also work for running the vehicle simulation. Lower system requirements could work in a limited capacity, but the simulation's stability and effectiveness are unknown.
+The CARLA simulation was tested with a high-end workstation. However, the recommended system specification for the CARLA simulator should also work for running the vehicle simulation. Lower system requirements could work in a limited capacity, but the simulation's stability and effectiveness are unknown. **NB! The system was developed for Linux, particularly Ubuntu 20.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
 
 ### Tested System Specification
 - **Operating System:** Ubuntu 20.04.1 LTS (Linux Kernel 5.15.0-134-generic)
