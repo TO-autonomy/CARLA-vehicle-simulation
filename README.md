@@ -1,4 +1,4 @@
-## CARLA vehicle simulation
+## CARLA vehicle simulation (CARLA v0.9.15)
 
 This guide provides instructions for setting up and running a vehicle simulation in the CARLA simulator to generate synthetic sensor data. The simulation software records sensor information for six cameras and a LiDAR sensor. The sensors are positioned to mimic NuScenes dataset sensor setup. 
 
