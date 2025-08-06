@@ -1,6 +1,4 @@
 src/CARLASimulator
-src/run_simulation.py
-src/run_simulation_postprocessing.py
 *processed_data*
 *generated_data*
 *__pycache__*
