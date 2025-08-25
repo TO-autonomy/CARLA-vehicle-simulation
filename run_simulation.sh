@@ -51,12 +51,11 @@ python3 $SIMULATION_SCRIPT_PY \
     --output_dir $SOURCE_DIR/generated_data \
     --skip_validation
 
-## Run post processing of simulation data to create a dataset (uncomment commands below to run)
-POSTPROCESSING_SCRIPT_PY=$SOURCE_DIR/run_simulation_postprocessing.py
-python3 $POSTPROCESSING_SCRIPT_PY \
-    --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
-    --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
-    --input_dir $SOURCE_DIR/generated_data \
-    --output_dir $SOURCE_DIR/processed_data \
-    --batch_size 20 \
-    --mode 'debug'
+# ## Run post processing of simulation data to create a dataset (uncomment commands below to run)
+# POSTPROCESSING_SCRIPT_PY=$SOURCE_DIR/run_simulation_postprocessing.py
+# python3 $POSTPROCESSING_SCRIPT_PY \
+#     --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
+#     --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
+#     --input_dir $SOURCE_DIR/generated_data \
+#     --output_dir $SOURCE_DIR/processed_data \
+#     --batch_size 20
