@@ -42,14 +42,14 @@ then
 fi
 echo "CARLA simulator is running. Proceeding with the dataset generation."
 
-## Run simulation
-# SIMULATION_SCRIPT_PY=$SOURCE_DIR/run_simulation.py
-# python3 $SIMULATION_SCRIPT_PY \
-#     --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
-#     --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
-#     --episode_config $SOURCE_DIR/config/routes/town10.path.json \
-#     --output_dir $SOURCE_DIR/generated_data \
-#     --skip_validation
+# Run simulation
+SIMULATION_SCRIPT_PY=$SOURCE_DIR/run_simulation.py
+python3 $SIMULATION_SCRIPT_PY \
+    --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
+    --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
+    --episode_config $SOURCE_DIR/config/routes/town10.path.json \
+    --output_dir $SOURCE_DIR/generated_data \
+    --skip_validation
 
 ## Run post processing of simulation data to create a dataset (uncomment commands below to run)
 POSTPROCESSING_SCRIPT_PY=$SOURCE_DIR/run_simulation_postprocessing.py
