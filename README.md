@@ -2,6 +2,9 @@
 
 This guide provides instructions for setting up and running a vehicle simulation in the CARLA simulator to generate synthetic sensor data. The simulation software records sensor information for six cameras and a LiDAR sensor. The sensors are positioned to mimic NuScenes dataset sensor setup. 
 
+*Note: The article "On the Impact of Video Compression on Vision-Based Occupancy
+Prediction" is based on commit [d1a6ab8](https://github.com/TO-autonomy/CARLA-vehicle-simulation/tree/d1a6ab86d489e1b27c9eaca6d6c777b5bcb04788). It is strongly recommended to use this version of the pipeline to reproduce results.*
+
 ## System Requirements
 
 The CARLA simulation was tested with a high-end workstation. However, the recommended system specification for the CARLA simulator should also work for running the vehicle simulation. Lower system requirements could work in a limited capacity, but the simulation's stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 20.04 and Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
@@ -56,4 +59,5 @@ Simulation data post-processing is disabled by default. To enable it:
 2. Uncomment the relevant lines at the end of the file to activate post-processing.
 
 When data post-processing is enabled, the raw simulation data is processed and exported into a dataset structure. 
+
 
