@@ -8,6 +8,7 @@ import os
 import sys
 from enum import Enum
 from datetime import datetime
+import toml
 
 import carla
 import numpy as np
@@ -69,29 +70,15 @@ class URDFParser:
         m[:3, 3] = translation
         return m
 
-# Parse arguments (use defaults if running in Jupyter)
-if 'ipykernel_launcher.py' in sys.argv[0]: 
-    args = argparse.Namespace(
-        ego_vehicle_extrinsics='/home/leppsalu/Desktop/Github/voxel-visibility-multithreaded/CARLA-vehicle-simulation/src/config/carla_extrinsics.urdf',
-        ego_vehicle_intrinsics='/home/leppsalu/Desktop/Github/voxel-visibility-multithreaded/CARLA-vehicle-simulation/src/config/carla_intrinsics.json',
-        episode_config='/home/leppsalu/Desktop/Github/voxel-visibility-multithreaded/CARLA-vehicle-simulation/src/config/town03.path.json',
-        output_dir='/media/leppsalu/SSD_Storage/generated_data_town03_sample',
-        skip_validation=True,
-        toggle_off_buildings=False,
-        n_pedestrians=15,
-        n_vehicles=20
-    )
-else:
-    parser = argparse.ArgumentParser(description='Run simulation postprocessing.')
-    parser.add_argument('--ego_vehicle_extrinsics', type=str, required=False, default='/home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/carla_extrinsics.urdf')
-    parser.add_argument('--ego_vehicle_intrinsics', type=str, required=False, default='/home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/carla_intrinsics.json')
-    parser.add_argument('--episode_config', type=str, required=False, default='/home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/config/town02.path.json')
-    parser.add_argument('--output_dir', type=str, required=False, default='/home/leppsalu/Desktop/Github/CARLA-vehicle-simulation/src/generated_data')
-    parser.add_argument('--skip_validation', action='store_true')
-    parser.add_argument('--toggle_off_buildings', action='store_true')
-    parser.add_argument('--n_pedestrians', type=int, required=False, default=0)
-    parser.add_argument('--n_vehicles', type=int, required=False, default=0)
-    args = parser.parse_args()
+
+parser = argparse.ArgumentParser(description='Run simulation postprocessing.')
+parser.add_argument('--ego_vehicle_extrinsics', type=str, required=True)
+parser.add_argument('--ego_vehicle_intrinsics', type=str, required=True)
+parser.add_argument('--scenario', type=str, required=True)
+parser.add_argument('--output_dir', type=str, required=False, default='./generated_data')
+parser.add_argument('--skip_validation', action='store_true')
+args = parser.parse_args()
+
 
 EGO_VEHICLE_EXTRINSICS = args.ego_vehicle_extrinsics
 ego_vehicle_extrinsics = URDFParser(EGO_VEHICLE_EXTRINSICS)
@@ -100,22 +87,41 @@ EGO_VEHICLE_INTRINSICS = args.ego_vehicle_intrinsics
 with open(EGO_VEHICLE_INTRINSICS) as intrinsics_file:
     ego_vehicle_intrinsics = json.load(intrinsics_file)
 
-EPISODE_CONFIG_PATH = args.episode_config
-with open(EPISODE_CONFIG_PATH) as path_file:
-    episode_config_json = json.load(path_file)
-episode_map = episode_config_json["map"]
-episode_ego_vehicle_path = episode_config_json["route"]
+SCENARIO_CONFIG_PATH = args.scenario
+with open(SCENARIO_CONFIG_PATH, 'r') as path_file:
+    scenario_config_toml = toml.load(path_file)
 
+scenario_map = scenario_config_toml.get("map")
+assert scenario_map in ["Town01", "Town02", "Town03", "Town04", "Town05", "Town06", "Town07", "Town08", "Town09", "Town10HD"], f"Unsupported map: {scenario_map}. Supported maps are Town01 to Town10."
+scenario_ego_vehicle_path = scenario_config_toml.get("route")
+assert scenario_ego_vehicle_path is not None and len(scenario_ego_vehicle_path) >= 2, "Route must contain at least two waypoints."
+assert all(len(point) == 3 for point in scenario_ego_vehicle_path), "Each waypoint must be a list of three coordinates [x, y, z]."
+scenario_weather = scenario_config_toml.get("weather", "ClearNoon")
+scenario_random_seed = scenario_config_toml.get("random_seed", None)
+if scenario_random_seed is not None:
+    random.seed(scenario_random_seed)
+    np.random.seed(scenario_random_seed)
 SIMULATION_DATA_OUTPUT_PATH = args.output_dir
 SKIP_VALIDATION = args.skip_validation
-TOGGLE_OFF_BUILDINGS = args.toggle_off_buildings
-N_PEDESTRIANS = args.n_pedestrians
-N_VEHICLES = args.n_vehicles
+N_PEDESTRIANS = scenario_config_toml.get("ai_pedestrians", 0)
+N_VEHICLES = scenario_config_toml.get("ai_vehicles", 0)
+
+print("New simulation configuration:")
+print(f"  Map: {scenario_map}")
+print(f"  Ego vehicle extrinsics (URDF): {EGO_VEHICLE_EXTRINSICS}")
+print(f"  Ego vehicle intrinsics (JSON): {EGO_VEHICLE_INTRINSICS}")
+print(f"  Scenario config (TOML): {SCENARIO_CONFIG_PATH}")
+print(f"  Output directory: {SIMULATION_DATA_OUTPUT_PATH}")
+if SKIP_VALIDATION:
+    print("  Skipping path validation.")
+else:
+    print("  Path validation enabled.")
+
 
 # --- CARLA server connection and world setup ---
 
 client = carla.Client('localhost', 2000)
-client.set_timeout(100)
+client.set_timeout(30)
 world = client.get_world()
 map = world.get_map()
 blueprint_library = world.get_blueprint_library()
@@ -138,9 +144,8 @@ def load_world(map_name="Town01", timeout=10.0):
     spawn_points = map.get_spawn_points()
     traffic_manager = client.get_trafficmanager()
 
-load_world(map_name=episode_map)
-time.sleep(20)
-# reload_world()
+load_world(map_name=scenario_map)
+time.sleep(10)
 
 # --- Synchronous simulation mode context manager ---
 
@@ -318,11 +323,11 @@ def find_nearest_spawn_point(location):
 
 def validate_path():
     """Run a validation drive along the planned path and visualize with a camera."""
-    # reload_world()
+    reload_world()
     cv2.namedWindow("Press Q to stop simulation")
     cv2.imshow("Press Q to stop simulation", np.zeros((1,1)))
 
-    agent_path = get_agent_path(episode_ego_vehicle_path)
+    agent_path = get_agent_path(scenario_ego_vehicle_path)
 
     blueprint_name = "vehicle.dodge.charger_2020"
     blueprint = blueprint_library.find(blueprint_name)
@@ -368,14 +373,14 @@ def validate_path():
                 location = validation_vehicle.get_location()
                 actual_path.append((location.x, location.y, location.z))
                 if validation_vehicle_control_agent.done():
-                    print(f"{datetime.now()} Checkpoint reached. Validation vehicle has reached {len(episode_ego_vehicle_path) - len(agent_path)}/{len(episode_ego_vehicle_path)} planned path points.")
+                    print(f"{datetime.now()} Checkpoint reached. Validation vehicle has reached {len(scenario_ego_vehicle_path) - len(agent_path)}/{len(scenario_ego_vehicle_path)} planned path points.")
                     if (agent_path == []):
                         agent_path_completed = True
                         break
                     next_wp = agent_path.pop(0)
                     validation_vehicle_control_agent.set_destination(next_wp)
                 elif next_wp is not None and next_wp.distance(validation_vehicle.get_location()) < 2.0:
-                    print(f"{datetime.now()} Checkpoint reached. Validation vehicle has reached {len(episode_ego_vehicle_path) - len(agent_path)}/{len(episode_ego_vehicle_path)} planned path points.")
+                    print(f"{datetime.now()} Checkpoint reached. Validation vehicle has reached {len(scenario_ego_vehicle_path) - len(agent_path)}/{len(scenario_ego_vehicle_path)} planned path points.")
                     if (agent_path == []):
                         agent_path_completed = True
                         break
@@ -390,13 +395,13 @@ def validate_path():
         validation_vehicle.destroy()
 
     assert agent_path_completed, "Validation failed. The vehicle could not complete the planned path."
-    return episode_ego_vehicle_path, actual_path
+    return scenario_ego_vehicle_path, actual_path
 
 validation_results = dict()
 if not SKIP_VALIDATION:
-    print("Validating the episode path...")
-    episode_ego_vehicle_path, actual_path = validate_path()
-    validation_results["planned_path"] = episode_ego_vehicle_path
+    print("Validating the scenario path...")
+    scenario_ego_vehicle_path, actual_path = validate_path()
+    validation_results["planned_path"] = scenario_ego_vehicle_path
     validation_results["actual_path"] = actual_path
     print("Validation path successfully completed.")
 
@@ -538,10 +543,39 @@ if not SKIP_VALIDATION:
 # --- Prepare CARLA world for full simulation ---
 
 print("Setting up the full simulation environment...")
-# reload_world()
+reload_world()
+
+# Predefined CARLA weather presets
+weather_presets = {
+    "ClearNoon": carla.WeatherParameters.ClearNoon,
+    "CloudyNoon": carla.WeatherParameters.CloudyNoon,
+    "WetNoon": carla.WeatherParameters.WetNoon,
+    "WetCloudyNoon": carla.WeatherParameters.WetCloudyNoon,
+    "MidRainyNoon": carla.WeatherParameters.MidRainyNoon,
+    "HardRainNoon": carla.WeatherParameters.HardRainNoon,
+    "SoftRainNoon": carla.WeatherParameters.SoftRainNoon,
+    "ClearSunset": carla.WeatherParameters.ClearSunset,
+    "CloudySunset": carla.WeatherParameters.CloudySunset,
+    "WetSunset": carla.WeatherParameters.WetSunset,
+    "WetCloudySunset": carla.WeatherParameters.WetCloudySunset,
+    "MidRainSunset": carla.WeatherParameters.MidRainSunset,
+    "HardRainSunset": carla.WeatherParameters.HardRainSunset,
+    "SoftRainSunset": carla.WeatherParameters.SoftRainSunset
+}
+
+# Check if the specified weather exists
+if scenario_weather in weather_presets:
+    print(f"Setting weather to: {scenario_weather}")
+    world.set_weather(weather_presets[scenario_weather])
+else:
+    print(f"Weather '{scenario_weather}' not found. Using default weather: ClearNoon.")
+    world.set_weather(weather_presets["ClearNoon"])
+print("World weather is set.")
+
+print(f"Spawning ego vehicle and sensors...")
 
 # Spawn ego vehicle
-agent_path = get_agent_path(episode_ego_vehicle_path)
+agent_path = get_agent_path(scenario_ego_vehicle_path)
 
 blueprint_name = "vehicle.dodge.charger_2020"
 blueprint = blueprint_library.find(blueprint_name)
@@ -637,9 +671,7 @@ for sensor_configuration in ego_vehicle_extrinsics.robot.links:
         sensor_types.append(sensor_type)
         sensor_names.append(sensor_name)
 
-print(f"Number of sensors spawned: {len(sensors)}")
-print(sensor_names)
-print(sensor_types)
+print(f"Spawned ego vehicle and {len(sensors)} sensors!")
 
 # --- Add traffic (vehicles and pedestrians) ---
 
@@ -697,15 +729,6 @@ if N_VEHICLES > 0:
 if N_PEDESTRIANS > 0:
     add_pedestrians_to_simulation(n_pedestrians=N_PEDESTRIANS)
 print("Simulation environment setup completed!")
-
-# --- Optionally toggle off all buildings ---
-
-if TOGGLE_OFF_BUILDINGS:
-    print("Turing off buildings...")
-    objs = world.get_environment_objects(carla.CityObjectLabel.Buildings)
-    building_ids = [obj.id for obj in objs]
-    world.enable_environment_objects(building_ids, False)
-    print("Buildings are turned off.")
 
 # --- Filesystem and sensor data utilities ---
 
@@ -840,7 +863,7 @@ cv2.namedWindow("Press Q to stop simulation")
 cv2.imshow("Press Q to stop simulation", np.zeros((1,1)))
 
 vehicle_control_agent = BasicAgent(vehicle, target_speed=15)
-agent_path = get_agent_path(episode_ego_vehicle_path)
+agent_path = get_agent_path(scenario_ego_vehicle_path)
 vehicle_control_agent.set_destination(agent_path.pop(0))
 
 try:
@@ -877,7 +900,7 @@ try:
                     save_lidar_readings(sensor_data, sensor_data_path)
                 save_sensor_position(sensor_data, sensor_data_path, sensor_type=sensor_type)
             if vehicle_control_agent.done():
-                print(f"{datetime.now()} Checkpoint reached. Ego vehicle has reached {len(episode_ego_vehicle_path) - len(agent_path)}/{len(episode_ego_vehicle_path)} planned path points.")
+                print(f"{datetime.now()} Checkpoint reached. Ego vehicle has reached {len(scenario_ego_vehicle_path) - len(agent_path)}/{len(scenario_ego_vehicle_path)} planned path points.")
                 if len(agent_path) == 0:
                     break
                 vehicle_control_agent.set_destination(agent_path.pop(0))

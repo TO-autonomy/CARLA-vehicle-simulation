@@ -510,7 +510,7 @@ def process_data(timestamp):
         depth_camera_extrinsics_matrix = np.dot(np.linalg.inv(lidar_transform), depth_camera_transform)
         depth_camera = Camera(depth_camera_intrinsics_matrix, depth_camera_extrinsics_matrix, name=DEPTH_DIR)
         depth_cameras.append(depth_camera)         
-        point_cloud = depth_image_to_semantic_point_cloud(depth_image, semantic_image, depth_camera_intrinsics, clip_distance=MAX_POSTPROCESSING_DISTANCE)
+        point_cloud = depth_image_to_semantic_point_cloud(depth_image, semantic_image, depth_camera_intrinsics, max_distance=MAX_POSTPROCESSING_DISTANCE)
         point_cloud.transform(depth_camera_transform)
         depth_point_cloud += point_cloud
     depth_point_cloud.transform(np.linalg.inv(lidar_transform))
