@@ -288,20 +288,69 @@ class CARLAMap:
         output = dict()
         output["map"] = self._name.split("/")[-1]
         output["route"] = highlighted_paths[new_path_name]
-        output_json = json.dumps(output, indent=4)
-        print(output_json)
+        return output
 
-# Import map from Carla
-client = carla.Client('localhost', 2000)
-client.set_timeout(10)
-town_name = "Town10HD"
-world = client.load_world(town_name)
-world = client.get_world()
-world_map = world.get_map()
+def get_simulation_parameters():
+    print("Specify Simulation Parameters:")
 
-map = CARLAMap(world_map)
-map.show_topology()
+    # Select town
+    towns = ["Town01", "Town02", "Town03", "Town10"]
+    print("Available Towns:")
+    for i, town in enumerate(towns):
+        print(f"{i + 1}. {town}")
+    town_index = int(input("Select a town (1-4): ")) - 1
+    town_name = towns[town_index]
 
+    # Select weather
+    weathers = ["Clear", "Rain", "Fog", "Night"]
+    print("Available Weather Conditions:")
+    for i, weather in enumerate(weathers):
+        print(f"{i + 1}. {weather}")
+    weather_index = int(input("Select weather (1-4): ")) - 1
+    weather = weathers[weather_index]
 
-# Close Pygame
-pygame.quit()
+    # Number of AI vehicles
+    ai_vehicles = int(input("Enter the number of AI vehicles: "))
+
+    # Number of dormant vehicles
+    dormant_vehicles = int(input("Enter the number of dormant vehicles: "))
+
+    # Number of pedestrians
+    pedestrians = int(input("Enter the number of pedestrians: "))
+
+    return {
+        "town": town_name,
+        "weather": weather,
+        "ai_vehicles": ai_vehicles,
+        "dormant_vehicles": dormant_vehicles,
+        "pedestrians": pedestrians
+    }
+
+# Main execution
+if __name__ == "__main__":
+    # Get simulation parameters
+    simulation_params = get_simulation_parameters()
+    print("Simulation Parameters:")
+    print(simulation_params)
+
+    # Connect to CARLA and load the selected town
+    client = carla.Client('localhost', 2000)
+    client.set_timeout(10)
+    world = client.load_world(simulation_params["town"])
+    world = client.get_world()
+    world_map = world.get_map()
+
+    # Display topology for route planning
+    map = CARLAMap(world_map)
+    route_dict = map.show_topology()
+    simulation_params["route"] = route_dict["route"]
+    print("Final Simulation Configuration:")
+    print(simulation_params)
+    # Save configuration to a JSON file
+    config_path = Path("simulation_config.json")
+    with open(config_path, 'w') as f:
+        json.dump(simulation_params, f, indent=4)
+    print(f"Simulation configuration saved to {config_path}")
+
+    # Close Pygame
+    pygame.quit()
