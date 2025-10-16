@@ -84,7 +84,7 @@ Then, start the simulation with:
 sh run_simulation.sh custom_scenario.toml
 ```
 
-The simulation will use your custom configuration and save the generated sensor data accordingly.
+The simulation will use your custom configuration and generate sensor data for that scenario.
 
 ### Recording-based Simulation
 
@@ -128,6 +128,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
