@@ -119,7 +119,7 @@ When enabled, raw simulation data is processed and exported into a structured da
 
 ## Enabling Data Visualization
 
-Visualization is disabled by default.  
+Data visualization is **disabled by default**.  
 To enable it:
 
 1. Open `run_simulation.sh` in a text editor.  
@@ -128,6 +128,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
