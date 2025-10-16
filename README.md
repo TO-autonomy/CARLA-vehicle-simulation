@@ -23,7 +23,7 @@ The CARLA simulation was tested with a high-end workstation. However, the recomm
 - **Python Version:** 3.8
 - **Architecture:** 64-bit
 - **Processor:** 8th Gen Intel® Core™ i7 or AMD Ryzen™ 7 (8 cores or higher)
-- **RAM:** 16 GB
+- **RAM:** 32 GB
 - **Python Version:** 3.8 or higher
 - **GPU:** NVIDIA GeForce RTX 3060 or higher with at least 8 GB VRAM
 - **Storage:** SSD with at least 20 GB of free space
@@ -128,6 +128,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
