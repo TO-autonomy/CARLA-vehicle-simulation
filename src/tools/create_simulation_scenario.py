@@ -6,6 +6,9 @@ import time
 import re
 from pathlib import Path
 import toml  # Add this import at the top of the file
+import os 
+
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 class CARLAWaypoint:
     def __init__(self, waypoint):
@@ -300,7 +303,7 @@ def show_instructions():
     # Set up the display
     WIDTH, HEIGHT = 1200, 900
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("CARLA Simulation - Instructions")
+    pygame.display.set_caption("CARLA scenario planning - Instructions")
 
     # Define colors
     WHITE = (255, 255, 255)
@@ -312,13 +315,11 @@ def show_instructions():
     # Display the splash screen
     screen.fill(WHITE)
     text_lines = [
-        "Welcome to the CARLA Simulation!",
+        "Welcome to CARLA scenario planner!",
         "",
         "Instructions:",
         "- Use mouse scroll wheel to zoom in/out.",
         "- Click and drag with left mouse button to pan the view.",
-        "- Click on checkboxes to toggle visibility of routes.",
-        "- Drag sliders to adjust the minimum distance between waypoints for each route.",
         "- Right-click on the map to add waypoints to the ego vehicle route.",
         "- Press ESC or close the window to finish route selection.",
         "",
@@ -326,12 +327,11 @@ def show_instructions():
     ]
 
     y_offset = 100
+    # Make the lines left aligned with some padding
     for line in text_lines:
         text_surface = font.render(line, True, BLACK)
-        text_rect = text_surface.get_rect(center=(WIDTH // 2, y_offset))
-        screen.blit(text_surface, text_rect)
-        y_offset += 50
-
+        screen.blit(text_surface, (50, y_offset))
+        y_offset += 40
     pygame.display.flip()
 
     # Wait for the user to press the space bar
@@ -408,6 +408,15 @@ def get_simulation_parameters():
 
 # Main execution
 if __name__ == "__main__":
+    # Read command line arguments for output file
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Create a CARLA simulation scenario by selecting a route on the map.")
+    parser.add_argument('--output_file', type=str, default='simulation_config.toml', help='Path to save the simulation configuration TOML file.')
+    args = parser.parse_args()
+    output_filepath = os.path.abspath(args.output_file)
+
     # Get simulation parameters
     simulation_params = get_simulation_parameters()
     print("Simulation Parameters:")
@@ -429,10 +438,9 @@ if __name__ == "__main__":
     print("Final Simulation Configuration:")
     print(simulation_params)
     # Save configuration to a TOML file
-    config_path = Path("simulation_config.toml")
-    with open(config_path, 'w') as f:
+    with open(output_filepath, 'w') as f:
         toml.dump(simulation_params, f)
-    print(f"Simulation configuration saved to {config_path}")
+    print(f"Simulation configuration saved to {output_filepath}")
 
     # Close Pygame
     pygame.quit()

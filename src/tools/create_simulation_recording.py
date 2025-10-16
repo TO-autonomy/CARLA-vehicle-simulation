@@ -502,7 +502,7 @@ class KeyboardControl(object):
                         client.stop_recorder()
                         world.recording_enabled = False
                         world.hud.notification("Recorder is OFF")
-                        logging.info('Recorder stopped. Recording saved to %s', self._recording_path)
+                        print(f'Recorder stopped. Recording saved to {self._recording_path}')
                     else:
                         client.start_recorder(self._recording_path)
                         world.recording_enabled = True
@@ -1370,7 +1370,7 @@ def game_loop(args):
 
         hud = HUD(args.width, args.height)
         world = World(sim_world, hud, args)
-        controller = KeyboardControl(world, args.autopilot, args.recording_path)
+        controller = KeyboardControl(world, args.autopilot, args.output_file)
 
         if args.sync:
             sim_world.tick()
@@ -1520,7 +1520,7 @@ def main():
         action='store_true',
         help='Activate synchronous mode execution')
     argparser.add_argument(
-        '--recording_path',
+        '--output_file',
         type=str,
         help='Path to save the recording file')
     argparser.add_argument(
@@ -1569,7 +1569,9 @@ def main():
     if random_seed is not None:
         random.seed(random_seed)
         np.random.seed(random_seed)
-    args.recording_path = args.recording_path if args.recording_path else os.path.join(os.getcwd(), f'{str(args.map).lower()}.recording.rec')
+    
+
+    args.output_file = os.path.join(os.getcwd(), args.output_file) if args.output_file else os.path.join(os.getcwd(), f'{str(args.map).lower()}.recording.rec')
 
     try:
 
