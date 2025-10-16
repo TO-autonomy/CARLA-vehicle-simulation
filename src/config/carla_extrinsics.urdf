@@ -75,7 +75,7 @@
         <child link="CAM_FRONT_LEFT" />
     </joint>
     <joint name="base_link_to_center" type="fixed">
-        <origin xyz="0.0 0.0 0.5" rpy="0.0 0.0 0.0" />
+        <origin xyz="-1.5 0.0 0.15" rpy="0.0 0.0 0.0" />
         <parent link="base_link" />
         <child link="center" />
     </joint>

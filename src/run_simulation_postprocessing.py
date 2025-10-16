@@ -21,35 +21,20 @@ from classes.carla.Sensors import Camera
 from classes.util.URDFParser import URDFParser
 from classes.util.Viewshed3D import ViewShed3D, compute_camera_matrix_4x4
 
-# Parse command-line arguments or use defaults for Jupyter Notebook
-if 'ipykernel_launcher.py' in sys.argv[0]: 
-    args = argparse.Namespace(
-        ego_vehicle_extrinsics='/home/leppsalu/Desktop/Github/voxel-visibility-multithreaded/CARLA-vehicle-simulation/src/config/carla_extrinsics.urdf',
-        ego_vehicle_intrinsics='/home/leppsalu/Desktop/Github/voxel-visibility-multithreaded/CARLA-vehicle-simulation/src/config/carla_intrinsics.json',
-        input_dir='/media/leppsalu/SSD_Storage/generated_data_town03_sample',
-        output_dir='/media/leppsalu/SSD_Storage/processed_data_town03_sample',
-        batch_size=15,
-        n_workers=-1,
-        n_frames_per_bag=1800,
-        from_timestamp=None,
-        to_timestamp=None,
-        mode='minimal',
-        clean_source_dirs_before_processing=False
-    )
-else:
-    parser = argparse.ArgumentParser(description='Run simulation postprocessing.')
-    parser.add_argument('--ego_vehicle_extrinsics', type=str, required=True, help='Path to the ego vehicle extrinsics file')
-    parser.add_argument('--ego_vehicle_intrinsics', type=str, required=True, help='Path to the ego vehicle intrinsics file')
-    parser.add_argument('--input_dir', type=str, required=True, help='Path to the directory with simulation data')
-    parser.add_argument('--output_dir', type=str, required=True, help='Path to the output directory where the processed data will be saved')
-    parser.add_argument('--batch_size', type=int, default=15, help='Number of frames to process in a single batch (default: 15)')
-    parser.add_argument('--n_workers', type=int, default=-1, help='Number of workers for multiprocessing (default: all cores)')
-    parser.add_argument('--n_frames_per_bag', type=int, default=1800, help='Number of frames in a bag (default: 1800)')
-    parser.add_argument('--from_timestamp', type=int, default=None, help='Start post processing from frame with this timestamp')
-    parser.add_argument('--to_timestamp', type=int, default=None, help='End post processing at frame with this timestamp')
-    parser.add_argument('--mode', choices=['minimal', 'full', 'debug'], default='debug', help="Processing mode: 'minimal', 'full', or 'debug' (default: 'debug')")
-    parser.add_argument('--clean_input_dir', action='store_true', help='Clean input directory before processing (removes files from previous runs)')
-    args = parser.parse_args()
+
+parser = argparse.ArgumentParser(description='Run simulation postprocessing.')
+parser.add_argument('--ego_vehicle_extrinsics', type=str, required=True, help='Path to the ego vehicle extrinsics file')
+parser.add_argument('--ego_vehicle_intrinsics', type=str, required=True, help='Path to the ego vehicle intrinsics file')
+parser.add_argument('--input_dir', type=str, required=True, help='Path to the directory with simulation data')
+parser.add_argument('--output_dir', type=str, required=True, help='Path to the output directory where the processed data will be saved')
+parser.add_argument('--batch_size', type=int, default=15, help='Number of frames to process in a single batch (default: 15)')
+parser.add_argument('--n_workers', type=int, default=-1, help='Number of workers for multiprocessing (default: all cores)')
+parser.add_argument('--n_frames_per_bag', type=int, default=1800, help='Number of frames in a bag (default: 1800)')
+parser.add_argument('--from_timestamp', type=int, default=None, help='Start post processing from frame with this timestamp')
+parser.add_argument('--to_timestamp', type=int, default=None, help='End post processing at frame with this timestamp')
+parser.add_argument('--mode', choices=['minimal', 'full', 'debug'], default='debug', help="Processing mode: 'minimal', 'full', or 'debug' (default: 'debug')")
+parser.add_argument('--clean_input_dir', action='store_true', help='Clean input directory before processing (removes files from previous runs)')
+args = parser.parse_args()
 
 SOURCE_DIR = args.input_dir
 TARGET_DIR = args.output_dir 
@@ -510,7 +495,7 @@ def process_data(timestamp):
         depth_camera_extrinsics_matrix = np.dot(np.linalg.inv(lidar_transform), depth_camera_transform)
         depth_camera = Camera(depth_camera_intrinsics_matrix, depth_camera_extrinsics_matrix, name=DEPTH_DIR)
         depth_cameras.append(depth_camera)         
-        point_cloud = depth_image_to_semantic_point_cloud(depth_image, semantic_image, depth_camera_intrinsics, clip_distance=MAX_POSTPROCESSING_DISTANCE)
+        point_cloud = depth_image_to_semantic_point_cloud(depth_image, semantic_image, depth_camera_intrinsics, max_distance=MAX_POSTPROCESSING_DISTANCE)
         point_cloud.transform(depth_camera_transform)
         depth_point_cloud += point_cloud
     depth_point_cloud.transform(np.linalg.inv(lidar_transform))
@@ -645,8 +630,8 @@ print(f"Processed data in {SOURCE_DIR}")
 TARGET_CAM_DIRS = ["CAM_FRONT", "CAM_FRONT_LEFT", "CAM_FRONT_RIGHT", "CAM_BACK", "CAM_BACK_LEFT", "CAM_BACK_RIGHT"]
 TARGET_LIDAR_DIR = "LIDAR_TOP"
 TARGET_FOV_MASKS_DIR = "fov_masks"
-TARGET_BEVS_DIR = "bevs"
-TARGET_SDFS_DIR = "sdfs"
+TARGET_BEVS_DIR = "occ"
+TARGET_SDFS_DIR = "soft_occ"
 TARGET_VISIBILITY_MASKS_DIR = "visibility_masks"
 TARGET_CUMULATIVE_MASKS_DIR = "cumulative_masks"
 

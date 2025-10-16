@@ -1,4 +1,3 @@
-### Description: Script to generate datasets for the CARLA vehicle simulation project.
 echo "========================================"
 echo "CARLA vehicle simulation"
 echo "========================================"
@@ -10,52 +9,50 @@ set -e
 CURRENT_DIR=$(pwd)
 SOURCE_DIR=$CURRENT_DIR/src
 SIMULATOR_DIR=$SOURCE_DIR/CARLASimulator
+INPUT_FILE=${1:-$SOURCE_DIR/config/scenarios/town03.scenario1.toml} # Default scenario file if none provided
 
-## Check if current directory is the root of the project by checking the existence of the SOURCE_DIR and SIMULATOR_DIR directory
-if [ ! -d "$SOURCE_DIR" ] || [ ! -d "$SIMULATOR_DIR" ]; then
-    echo "Please run this script from the root of the project."
+# Add CARLA PythonAPI to PYTHONPATH
+export PYTHONPATH="$PYTHONPATH:$SIMULATOR_DIR/PythonAPI/carla"
+
+# Start CARLA server
+sh $CURRENT_DIR/start_simulator.sh
+
+echo "==="
+
+# Determine the file type and run the appropriate simulation script
+FILE_EXTENSION="${INPUT_FILE##*.}"
+if [ "$FILE_EXTENSION" = "toml" ]; then
+    python3 $SOURCE_DIR/run_planned_simulation.py \
+        --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
+        --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
+        --scenario $INPUT_FILE \
+        --output_dir $CURRENT_DIR/generated_data \
+        --skip_validation
+elif [ "$FILE_EXTENSION" = "rec" ]; then
+    # Run simulation to generate dataset
+    python3 $SOURCE_DIR/run_recorded_simulation.py \
+        --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
+        --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
+        --recording $INPUT_FILE \
+        --output_dir $CURRENT_DIR/generated_data
+else
+    echo "Error: Unsupported file type. Please provide a .toml or .rec file."
     exit 1
 fi
 
-## Add CARLA PythonAPI to environment path variables (if necessary)
-SIMULATOR_PYTHON_API=$SIMULATOR_DIR/PythonAPI/carla
-if [ ! -d "$SIMULATOR_PYTHON_API" ]; then
-    echo "PythonAPI ($SIMULATOR_PYTHON_API) is missing from the CARLA simulator source directory ($SIMULATOR_DIR). Please check the CARLA installation and ensure that PythonAPI is available."
-    exit 1
-fi
-export PYTHONPATH="$PYTHONPATH:$SIMULATOR_PYTHON_API"
-
-
-## Check if the CARLA simulator is running, if not, start the server
-SERVER_SCRIPT=$SIMULATOR_DIR/CarlaUE4.sh
-echo "Checking if the CARLA simulator is running..."
-if ! pgrep -f "CarlaUE4" > /dev/null
-then
-    echo "CARLA simulator is not running. Starting server..."
-    sh $SERVER_SCRIPT &
-    sleep 5
-    if ! pgrep -f "CarlaUE4" > /dev/null
-    then
-        echo "Failed to start CARLA simulator. Exiting..."
-        exit 1
-    fi
-fi
-echo "CARLA simulator is running. Proceeding with the dataset generation."
-
-# Run simulation
-SIMULATION_SCRIPT_PY=$SOURCE_DIR/run_simulation.py
-python3 $SIMULATION_SCRIPT_PY \
-    --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
-    --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
-    --episode_config $SOURCE_DIR/config/routes/town10.path.json \
-    --output_dir $SOURCE_DIR/generated_data \
-    --skip_validation
-
-# ## Run post processing of simulation data to create a dataset (uncomment commands below to run)
-# POSTPROCESSING_SCRIPT_PY=$SOURCE_DIR/run_simulation_postprocessing.py
-# python3 $POSTPROCESSING_SCRIPT_PY \
+## Run post processing of simulation data to create a dataset (uncomment commands below to run)
+# python3 $SOURCE_DIR/run_simulation_postprocessing.py\
 #     --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
 #     --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
-#     --input_dir $SOURCE_DIR/generated_data \
-#     --output_dir $SOURCE_DIR/processed_data \
-#     --batch_size 20
+#     --input_dir $CURRENT_DIR/generated_data \
+#     --output_dir $CURRENT_DIR/processed_data \
+#     --mode minimal
+
+## Run visualization of the generated simulation data (uncomment command below to run)
+# python3 $SOURCE_DIR/run_simulation_visualization.py \
+#     --input_dir $CURRENT_DIR/generated_data \
+#     --sensor_subdirs CAM_FRONT_LEFT, CAM_FRONT, CAM_FRONT_RIGHT, LIDAR_TOP \
+#     --output_dir $CURRENT_DIR/generated_data/visualizations
+
+echo "Simulation pipeline completed."
+echo "Exiting..."
