@@ -12,16 +12,6 @@ import open3d as o3d
 import sys
 import re
 
-
-# GLOBAL VARIABLES
-client = carla.Client('localhost', 2000)
-client.set_timeout(100)
-world = client.get_world()
-map = world.get_map()
-blueprint_library = world.get_blueprint_library()
-spawn_points = world.get_map().get_spawn_points()
-# END OF GLOBAL VARIABLES
-
 class URDFParser:
     def __init__(self, urdf_file):
         self.urdf_file = urdf_file
@@ -61,9 +51,7 @@ class URDFParser:
 def get_recording_info(client, rec_file):
     """Extract map name and frames from a CARLA recording file."""
     info = client.show_recorder_file_info(rec_file, False)
-    # Write info as log file to recording_info.log
-    with open("recording_info.log", "w") as f:
-        f.write(info)
+
     map_name = None
     frames = None
     recording_duration = None
@@ -216,7 +204,7 @@ def save_lidar_readings(raw_data, target_directory):
     filepath = os.path.join(target_directory, filename)
     o3d.io.write_point_cloud(filepath, point_cloud)
 
-def spawn_single_sensor(vehicle, ego_vehicle_extrinsics, ego_vehicle_intrinsics, sensor_output_path):
+def spawn_single_sensor(client, vehicle, ego_vehicle_extrinsics, ego_vehicle_intrinsics, sensor_output_path):
     """Spawn only a specific sensor"""
     def listener_factory(sensor_type, output_dir):
         if not os.path.exists(output_dir):
@@ -245,6 +233,9 @@ def spawn_single_sensor(vehicle, ego_vehicle_extrinsics, ego_vehicle_intrinsics,
         
         print(f"Warning: No listener defined for sensor {sensor_type}, using dummy listener.")
         return lambda x: None
+
+    world = client.get_world()
+    blueprint_library = world.get_blueprint_library()
 
     target_sensor_name = sensor_output_path.split("/")[-1]
     print(f"Spawning sensor: {target_sensor_name}")
@@ -328,7 +319,7 @@ def main():
     parser.add_argument('--output_dir', type=str, required=True, help='Directory to save the sensor data')
     args = parser.parse_args()
 
-    recording_path = str(args.recording)
+    recording_path = os.path.abspath(str(args.recording))
     if not os.path.exists(recording_path):
         print(f"Error: Recording file {recording_path} does not exist.")
         return 1
@@ -344,7 +335,7 @@ def main():
     print(f"Replaying recording: {recording_path}")
     print(f"Output directory: {args.output_dir}")
     client = carla.Client('localhost', 2000)
-    client.set_timeout(30.0)
+    client.set_timeout(20.0)
     map_name, frames, recording_duration = get_recording_info(client, recording_path)
     frames = int(recording_duration / 0.1) # Assuming 10 FPS for replay
     # print(client.show_recorder_file_info(recording_path))
@@ -397,7 +388,7 @@ def main():
         with open(intrinsics_path, 'r') as f:
             vehicle_sensor_intrinsics = json.load(f)
         
-        sensors = spawn_single_sensor(vehicle, vehicle_sensor_extrinsics, vehicle_sensor_intrinsics, os.path.join(args.output_dir, sensor_name))
+        sensors = spawn_single_sensor(client, vehicle, vehicle_sensor_extrinsics, vehicle_sensor_intrinsics, os.path.join(args.output_dir, sensor_name))
         print(f"Simulating sensor {sensor_name} in replay mode...")
 
         try:

@@ -497,8 +497,6 @@ class KeyboardControl(object):
                     if pygame.key.get_mods() & KMOD_CTRL:
                         index_ctrl = 9
                     world.camera_manager.set_sensor(event.key - 1 - K_0 + index_ctrl)
-                elif event.key == K_r and not (pygame.key.get_mods() & KMOD_CTRL):
-                    world.camera_manager.toggle_recording()
                 elif event.key == K_r and (pygame.key.get_mods() & KMOD_CTRL):
                     if (world.recording_enabled):
                         client.stop_recorder()
@@ -1267,7 +1265,6 @@ def game_loop(args):
     pygame.init()
     pygame.font.init()
     world = None
-    original_settings = None
 
     # Display the splash screen
     WIDTH, HEIGHT = args.width, args.height
@@ -1334,13 +1331,27 @@ def game_loop(args):
         client = carla.Client(args.host, args.port)
         client.set_timeout(2000.0)
 
+        # Load the specified map
+        if args.map:
+            print(f"Loading map: {args.map}")
+            client.load_world(args.map)
+
         sim_world = client.get_world()
+
+        # Set the specified weather
+        if args.weather:
+            print(f"Setting weather: {args.weather}")
+            weather_presets = {preset[1]: preset[0] for preset in find_weather_presets()}
+            if args.weather in weather_presets:
+                sim_world.set_weather(weather_presets[args.weather])
+            else:
+                print(f"Warning: Weather preset '{args.weather}' not found. Using default weather.")
+
         if args.sync:
-            original_settings = sim_world.get_settings()
             settings = sim_world.get_settings()
             if not settings.synchronous_mode:
                 settings.synchronous_mode = True
-                settings.fixed_delta_seconds = 0.05
+                settings.fixed_delta_seconds = 1 / args.fps
             sim_world.apply_settings(settings)
 
             traffic_manager = client.get_trafficmanager()
@@ -1378,7 +1389,7 @@ def game_loop(args):
         while True:
             if args.sync:
                 sim_world.tick()
-            clock.tick_busy_loop(60)
+            clock.tick_busy_loop(args.fps)
             if controller.parse_events(client, world, clock, args.sync):
                 break
             world.tick(clock)
@@ -1387,9 +1398,6 @@ def game_loop(args):
 
     finally:
 
-        if original_settings:
-            sim_world.apply_settings(original_settings)
-
         if (world and world.recording_enabled):
             client.stop_recorder()
 
@@ -1397,6 +1405,61 @@ def game_loop(args):
             world.destroy()
 
         pygame.quit()
+
+
+
+def get_simulation_parameters():
+    # Ask user for simulation parameters
+    # Allow to press enter to accept default values
+
+    print("Please enter the simulation parameters. Press Enter to accept the default value shown in brackets.")
+
+    # Select map from available CARLA towns
+    # Reference: https://carla.readthedocs.io/en/0.9.15/core_map/
+    maps = ["Town01", "Town02", "Town03", "Town04", "Town05", "Town10HD"]
+    print("Available Maps:")
+    for i, map in enumerate(maps):
+        print(f"{i + 1}. {map}")
+    map_index = int(input(f"Select a town (1-{len(maps)}): ")) - 1
+    map_name = maps[map_index]
+
+    # Select weather conditions available in CARLA 0.9.15
+    # Reference: https://carla.readthedocs.io/en/0.9.15/core-concepts/weather/
+    weathers = find_weather_presets()
+    weathers = [preset[1] for preset in weathers]
+    print("Available Weather Conditions:")
+    for i, weather in enumerate(weathers):
+        print(f"{i + 1}. {weather}")
+    weather_index = int(input(f"Select weather (1-{len(weathers)}): ")) - 1
+    weather = weathers[weather_index]
+
+    # Number of AI vehicles
+    ai_vehicles = int(input("Enter the number of AI controlled vehicles (default=0): ") or 0)
+
+    # Number of dormant vehicles
+    dormant_vehicles = int(input("Enter the number of dormant vehicles (default=0): ") or 0)
+
+    # Number of pedestrians
+    ai_pedestrians = int(input("Enter the number of AI controlled pedestrians (default=0): ") or 0)
+
+    # Number of dormant pedestrians
+    dormant_pedestrians = int(input("Enter the number of dormant pedestrians (default=0): ") or 0)
+
+    # Get a random seed for reproducibility
+    random_seed = int(input("Enter a random seed (default=None): ") or -1)
+    if random_seed == -1:
+        random_seed = None
+
+    return {
+        "map": map_name,
+        "weather": weather,
+        "ai_vehicles": ai_vehicles,
+        "dormant_vehicles": dormant_vehicles,
+        "ai_pedestrians": ai_pedestrians,
+        "dormant_pedestrians": dormant_pedestrians,
+        "random_seed": random_seed # Fixed seed for reproducibility
+    }
+
 
 
 # ==============================================================================
@@ -1435,7 +1498,7 @@ def main():
     argparser.add_argument(
         '--filter',
         metavar='PATTERN',
-        default='vehicle.*',
+        default='vehicle.dodge.charger_2020',
         help='actor filter (default: "vehicle.*")')
     argparser.add_argument(
         '--generation',
@@ -1459,7 +1522,6 @@ def main():
     argparser.add_argument(
         '--recording_path',
         type=str,
-        required=True,
         help='Path to save the recording file')
     argparser.add_argument(
         '--ai_vehicles',
@@ -1481,16 +1543,33 @@ def main():
         type=int,
         default=0,
         help='Number of dormant pedestrians to spawn')
+    argparser.add_argument(
+        '--map',
+        type=str,
+        default='Town01',
+        help='Name of the CARLA map to load (e.g., Town01)')
+    argparser.add_argument(
+        '--weather',
+        type=str,
+        default='ClearNoon',
+        help='Weather preset for the simulation (e.g., ClearNoon)')
     args = argparser.parse_args()
 
     args.width, args.height = [int(x) for x in args.res.split('x')]
-
-    log_level = logging.DEBUG if args.debug else logging.INFO
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=log_level)
-
-    logging.info('listening to server %s:%s', args.host, args.port)
-
-    print(__doc__)
+    args.sync = True  # Temporarily force synchronous mode
+    args.fps = 30
+    simulation_params = get_simulation_parameters()
+    args.map = simulation_params["map"]
+    args.weather = simulation_params["weather"]
+    args.ai_vehicles = simulation_params["ai_vehicles"]
+    args.dormant_vehicles = simulation_params["dormant_vehicles"]
+    args.ai_pedestrians = simulation_params["ai_pedestrians"]
+    args.dormant_pedestrians = simulation_params["dormant_pedestrians"]
+    random_seed = simulation_params["random_seed"]
+    if random_seed is not None:
+        random.seed(random_seed)
+        np.random.seed(random_seed)
+    args.recording_path = args.recording_path if args.recording_path else os.path.join(os.getcwd(), f'{str(args.map).lower()}.recording.rec')
 
     try:
 

@@ -87,7 +87,7 @@ EGO_VEHICLE_INTRINSICS = args.ego_vehicle_intrinsics
 with open(EGO_VEHICLE_INTRINSICS) as intrinsics_file:
     ego_vehicle_intrinsics = json.load(intrinsics_file)
 
-SCENARIO_CONFIG_PATH = args.scenario
+SCENARIO_CONFIG_PATH = os.path.abspath(args.scenario)
 with open(SCENARIO_CONFIG_PATH, 'r') as path_file:
     scenario_config_toml = toml.load(path_file)
 

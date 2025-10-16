@@ -5,6 +5,7 @@ import json
 import time
 import re
 from pathlib import Path
+import toml  # Add this import at the top of the file
 
 class CARLAWaypoint:
     def __init__(self, waypoint):
@@ -287,44 +288,123 @@ class CARLAMap:
 
         output = dict()
         output["map"] = self._name.split("/")[-1]
-        output["route"] = highlighted_paths[new_path_name]
+        output["route"] = highlighted_paths[new_path_name] if highlighted_paths.get(new_path_name, None) is not None else []
         return output
+    
+def show_instructions():
+    import pygame
+
+    # Initialize Pygame
+    pygame.init()
+
+    # Set up the display
+    WIDTH, HEIGHT = 1200, 900
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("CARLA Simulation - Instructions")
+
+    # Define colors
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+
+    # Define fonts
+    font = pygame.font.Font(None, 36)
+
+    # Display the splash screen
+    screen.fill(WHITE)
+    text_lines = [
+        "Welcome to the CARLA Simulation!",
+        "",
+        "Instructions:",
+        "- Use mouse scroll wheel to zoom in/out.",
+        "- Click and drag with left mouse button to pan the view.",
+        "- Click on checkboxes to toggle visibility of routes.",
+        "- Drag sliders to adjust the minimum distance between waypoints for each route.",
+        "- Right-click on the map to add waypoints to the ego vehicle route.",
+        "- Press ESC or close the window to finish route selection.",
+        "",
+        "Press SPACE to continue..."
+    ]
+
+    y_offset = 100
+    for line in text_lines:
+        text_surface = font.render(line, True, BLACK)
+        text_rect = text_surface.get_rect(center=(WIDTH // 2, y_offset))
+        screen.blit(text_surface, text_rect)
+        y_offset += 50
+
+    pygame.display.flip()
+
+    # Wait for the user to press the space bar
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    waiting = False
+
+    # Close the Pygame window
+    pygame.quit()
 
 def get_simulation_parameters():
-    print("Specify Simulation Parameters:")
+    # Ask user for simulation parameters
+    # Allow to press enter to accept default values
 
-    # Select town
-    towns = ["Town01", "Town02", "Town03", "Town10"]
-    print("Available Towns:")
-    for i, town in enumerate(towns):
-        print(f"{i + 1}. {town}")
-    town_index = int(input("Select a town (1-4): ")) - 1
-    town_name = towns[town_index]
+    print("Please enter the simulation parameters. Press Enter to accept the default value shown in brackets.")
 
-    # Select weather
-    weathers = ["Clear", "Rain", "Fog", "Night"]
+    # Select town from available CARLA towns
+    # Reference: https://carla.readthedocs.io/en/0.9.15/core_map/
+    maps = ["Town01", "Town02", "Town03", "Town04", "Town05", "Town10HD"]
+    print("Available Maps:")
+    for i, map in enumerate(maps):
+        print(f"{i + 1}. {map}")
+    map_index = int(input(f"Select a map (1-{len(maps)}): ")) - 1
+    map_name = maps[map_index]
+
+    # Select weather conditions available in CARLA 0.9.15
+    # Reference: https://carla.readthedocs.io/en/0.9.15/core-concepts/weather/
+    def find_weather_presets():
+        rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
+        name = lambda x: ' '.join(m.group(0) for m in rgx.finditer(x))
+        presets = [x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)]
+        return [(getattr(carla.WeatherParameters, x), name(x)) for x in presets]
+    weathers = find_weather_presets()
+    weathers = [preset[1] for preset in weathers]
     print("Available Weather Conditions:")
     for i, weather in enumerate(weathers):
         print(f"{i + 1}. {weather}")
-    weather_index = int(input("Select weather (1-4): ")) - 1
+    weather_index = int(input(f"Select weather (1-{len(weathers)}): ")) - 1
     weather = weathers[weather_index]
 
     # Number of AI vehicles
-    ai_vehicles = int(input("Enter the number of AI vehicles: "))
+    ai_vehicles = int(input("Enter the number of AI controlled vehicles (default=0): ") or 0)
 
     # Number of dormant vehicles
-    dormant_vehicles = int(input("Enter the number of dormant vehicles: "))
+    dormant_vehicles = int(input("Enter the number of dormant vehicles (default=0): ") or 0)
 
     # Number of pedestrians
-    pedestrians = int(input("Enter the number of pedestrians: "))
+    ai_pedestrians = int(input("Enter the number of AI controlled pedestrians (default=0): ") or 0)
+
+    # Number of dormant pedestrians
+    dormant_pedestrians = int(input("Enter the number of dormant pedestrians (default=0): ") or 0)
+
+    # Get a random seed for reproducibility
+    random_seed = int(input("Enter a random seed (default=None): ") or -1)
+    if random_seed == -1:
+        random_seed = None
 
     return {
-        "town": town_name,
+        "map": map_name,
         "weather": weather,
         "ai_vehicles": ai_vehicles,
         "dormant_vehicles": dormant_vehicles,
-        "pedestrians": pedestrians
+        "ai_pedestrians": ai_pedestrians,
+        "dormant_pedestrians": dormant_pedestrians,
+        "random_seed": random_seed # Fixed seed for reproducibility
     }
+
 
 # Main execution
 if __name__ == "__main__":
@@ -336,20 +416,22 @@ if __name__ == "__main__":
     # Connect to CARLA and load the selected town
     client = carla.Client('localhost', 2000)
     client.set_timeout(10)
-    world = client.load_world(simulation_params["town"])
+    world = client.load_world(simulation_params["map"])
     world = client.get_world()
     world_map = world.get_map()
 
     # Display topology for route planning
+    print("Loading map and displaying topology for route planning.")
     map = CARLAMap(world_map)
+    show_instructions()
     route_dict = map.show_topology()
     simulation_params["route"] = route_dict["route"]
     print("Final Simulation Configuration:")
     print(simulation_params)
-    # Save configuration to a JSON file
-    config_path = Path("simulation_config.json")
+    # Save configuration to a TOML file
+    config_path = Path("simulation_config.toml")
     with open(config_path, 'w') as f:
-        json.dump(simulation_params, f, indent=4)
+        toml.dump(simulation_params, f)
     print(f"Simulation configuration saved to {config_path}")
 
     # Close Pygame

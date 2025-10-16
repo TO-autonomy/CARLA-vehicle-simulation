@@ -1,23 +1,23 @@
-## Check if the CARLA simulator is running, if not, start the server
-if [ -z "$1" ]; then
-    echo "Usage: $0 <path_to_CarlaUE4.sh>"
-    exit 1
-fi
+#!/bin/bash
 
-SERVER_SCRIPT=$1
+# Define the paths to the source and simulator directories
+CURRENT_DIR=$(pwd)
+SOURCE_DIR=$CURRENT_DIR/src
+SIMULATOR_DIR=$SOURCE_DIR/CARLASimulator
+SERVER_SCRIPT="$SIMULATOR_DIR/CarlaUE4.sh"
 SERVER_SCRIPT_BASENAME=$(basename "$SERVER_SCRIPT")
 
 echo "Checking if the CARLA simulator is running..."
-if ! pgrep -af $SERVER_SCRIPT_BASENAME  | grep -v "$0" > /dev/null; then
+if ! pgrep -af "$SERVER_SCRIPT_BASENAME" | grep -v "$0" > /dev/null; then
     echo "CARLA simulator is not running."
     echo "Starting server..."
     # Start server script and redirect only stdout to /dev/null
     sh "$SERVER_SCRIPT" > /dev/null &
     sleep 5
-    if ! pgrep -af $SERVER_SCRIPT_BASENAME  | grep -v "$0" > /dev/null; then
+    if ! pgrep -af "$SERVER_SCRIPT_BASENAME" | grep -v "$0" > /dev/null; then
         echo "Failed to start CARLA simulator. Exiting..."
         exit 1
     fi
 fi
-echo "CARLA simulator is running."
 
+echo "CARLA simulator is running."

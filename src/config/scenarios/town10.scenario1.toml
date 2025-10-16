@@ -3,7 +3,7 @@ map = "Town10HD"
 
 # Possible weathers: "ClearNoon", "CloudyNoon", "WetNoon", "MidRainyNoon", "HardRainNoon", "SoftRainNoon",
 # "ClearSunset", "CloudySunset", "WetSunset", "MidRainSunset", "HardRainSunset", "SoftRainSunset"
-weather = "ClearNoon"
+weather = "Default"
 
 # Seed for random number generator to ensure reproducibility. Mainly affects the random placement of pedestrians and vehicles.
 random_seed = 42 
@@ -11,6 +11,9 @@ random_seed = 42
 # Number of AI controlled vehicles and pedestrians in the simulation
 ai_vehicles = 0
 ai_pedestrians = 0
+# Number of dormant vehicles and pedestrians in the simulation
+dormant_vehicles = 0
+dormant_pedestrians = 0
 
 # Route as a list of Town10HD waypoints (x, y, z coordinates)
 # The ego vehicle will follow these waypoints in order.

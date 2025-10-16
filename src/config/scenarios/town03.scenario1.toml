@@ -1,9 +1,10 @@
 # Scenario configuration for CARLA simulation in Town10
 map = "Town03"
 
-# Possible weathers: "ClearNoon", "CloudyNoon", "WetNoon", "MidRainyNoon", "HardRainNoon", "SoftRainNoon",
-# "ClearSunset", "CloudySunset", "WetSunset", "MidRainSunset", "HardRainSunset", "SoftRainSunset"
-weather = "ClearNoon"
+# Possible weather conditions: Clear Night, Clear Noon, Clear Sunset, Cloudy Night, Cloudy Noon, Cloudy Sunset,
+# Default, Dust Storm, Hard Rain Night, Hard Rain Noon, Hard Rain Sunset, Mid Rain Sunset, Mid Rainy Night, Mid Rainy Noon,
+# Soft Rain Night, Soft Rain Noon, Soft Rain Sunset, Wet Cloudy Night, Wet Cloudy Noon, Wet Cloudy Sunset, Wet Night, Wet Noon, Wet Sunset
+weather = "Default"
 
 # Seed for random number generator to ensure reproducibility. Mainly affects the random placement of pedestrians and vehicles.
 random_seed = 42
@@ -11,6 +12,9 @@ random_seed = 42
 # Number of AI controlled vehicles and pedestrians in the simulation
 ai_vehicles = 0
 ai_pedestrians = 0
+# Number of dormant vehicles and pedestrians in the simulation
+dormant_vehicles = 0
+dormant_pedestrians = 0
 
 route = [
     [
