@@ -30,9 +30,9 @@ if version_greater_equal "$REQUIRED_PIP_VERSION" "$CURRENT_PIP_VERSION"; then
     echo "pip3 current version $CURRENT_PIP_VERSION, satisfies minimum required version $REQUIRED_PIP_VERSION."
     echo "pip3 version check completed successfully."
 else
-    echo "pip3 version $CURRENT_PIP_VERSION is older than minimum required version $REQUIRED_PIP_VERSION. Upgrading pip3..."
-    pip3 install --upgrade pip
-    echo "pip3 upgraded successfully."
+    echo "pip3 version $CURRENT_PIP_VERSION is older than minimum required version $REQUIRED_PIP_VERSION."
+    echo "Please upgrade pip3 manually using the command: pip3 install --upgrade pip"
+    exit 1
 fi
 
 echo "========================================"
