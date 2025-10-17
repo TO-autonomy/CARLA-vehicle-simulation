@@ -56,6 +56,13 @@ DEPTH_CAM_DIRS = ["DEPTH_CAM_FRONT", "DEPTH_CAM_FRONT_LEFT", "DEPTH_CAM_FRONT_RI
 DEPTH_BEV_DIR = "DEPTH_BEV"
 DEPTH_VISIBILITY_DIR = "DEPTH_VISIBILITY"
 
+# Grid and BEV map parameters
+GRID_SIZE = 104         # Output grid size (pixels)
+GRID_RESOLUTION = 0.5   # Output grid resolution (meters)
+GRID_ORIGIN = np.array([GRID_SIZE // 2, GRID_SIZE // 2]) 
+GRID_DIAGONAL = np.sqrt(GRID_SIZE**2 + GRID_SIZE**2)
+MAX_POSTPROCESSING_DISTANCE = GRID_RESOLUTION * np.ceil(GRID_DIAGONAL / 2) # Max distance for processing
+
 # Load sensor extrinsics and intrinsics
 EXTRINSICS = URDFParser(EXTRINSICS_FILEPATH)
 with open(INTRINSICS_FILEPATH, "r") as INTRINSICS_FILE:
@@ -99,13 +106,6 @@ def get_extrinsics_matrix(query_name):
     root_link = EXTRINSICS.root
     extrinsics_matrix = EXTRINSICS.compute_chain_transform(robot.get_chain(root_link, sensor_name))
     return extrinsics_matrix
-
-# Grid and BEV map parameters
-GRID_SIZE = 104         # Output grid size (pixels)
-GRID_RESOLUTION = 0.5   # Output grid resolution (meters)
-GRID_ORIGIN = np.array([GRID_SIZE // 2, GRID_SIZE // 2]) 
-GRID_DIAGONAL = np.sqrt(GRID_SIZE**2 + GRID_SIZE**2)
-MAX_POSTPROCESSING_DISTANCE = GRID_RESOLUTION * np.ceil(GRID_DIAGONAL / 2) # Max distance for processing
 
 # Filesystem utility functions
 def remove_files_in_dir(data_dir, string_to_find):
@@ -414,6 +414,19 @@ def get_timestamps_from_filenames(filenames, sorted_order=True):
         timestamps = sorted(timestamps)
     return timestamps
 
+def get_missing_timestamps(timestamps, data_dirs):
+    # Identify timestamps missing from any of the specified data directories
+    missing_timestamps = set()
+    for data_dir in data_dirs:
+        existing_filenames = get_all_filenames(os.path.join(SOURCE_DIR, data_dir), no_extension=True)
+        existing_timestamps = get_timestamps_from_filenames(existing_filenames, sorted_order=False)
+        existing_timestamps_set = set(existing_timestamps)
+        for timestamp in timestamps:
+            if timestamp not in existing_timestamps_set:
+                missing_timestamps.add(timestamp)
+    missing_timestamps = sorted(list(missing_timestamps))
+    return missing_timestamps
+
 def get_corrected_point_clouds(obstacles_point_cloud, ground_point_cloud, height_range=(0.3, 1.5)):
     # Remove points far from ground mesh and correct ground/obstacle separation
     def gen_mesh(pcd): 
@@ -610,8 +623,16 @@ if CLEAN_SOURCE_DIR:
     clean_up_depth_bev_dir()
     clean_up_depth_visibility_dir()
 
-all_filenames = get_all_filenames(os.path.join(SOURCE_DIR, LIDAR_DIR))
-timestamps = get_timestamps_from_filenames(all_filenames)
+lidar_filenames = get_all_filenames(os.path.join(SOURCE_DIR, LIDAR_DIR))
+lidar_timestamps = get_timestamps_from_filenames(lidar_filenames)
+missing_timestamps = get_missing_timestamps(
+    lidar_timestamps, 
+    [os.path.join(SOURCE_DIR, sensor_dir) for sensor_dir in CAM_DIRS + DEPTH_CAM_DIRS + SEMANTIC_CAM_DIRS]
+)
+if len(missing_timestamps) > 0:
+    print(f"Warning: The following timestamps are missing data and will be skipped during processing: {sorted(list(missing_timestamps))}")
+timestamps = [timestamp for timestamp in lidar_timestamps if timestamp not in missing_timestamps]
+
 if START_FROM_TIMESTAMP is not None:
     frame_index = timestamps.index(START_FROM_TIMESTAMP)
     timestamps = timestamps[frame_index:]
@@ -648,10 +669,7 @@ def copy_file_to_target_dir(source_file_path, target_file_path):
     os.makedirs(target_directory_path, exist_ok=True)
     shutil.copyfile(source_file_path, target_file_path)
 
-clean_up_target_dir()
-
-all_timestamps = get_all_filenames(os.path.join(SOURCE_DIR, DEPTH_CAM_DIRS[0]), no_extension=True)
-timestamps = get_timestamps_from_filenames(all_filenames)
+clean_up_target_dir()    
 
 print(f"Exporting post-processed data...")
 for i, timestamp in enumerate(timestamps):

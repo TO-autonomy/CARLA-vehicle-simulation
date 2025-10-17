@@ -27,7 +27,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Visualize multi-sensor data from CARLA simulation.")
     parser.add_argument('--input_dir', type=str, required=True, help='Directory containing sensor subdirectories with images.')
     parser.add_argument('--sensor_subdirs', type=str, required=True, help='Comma-separated list of sensor subdirectory names to visualize.')
-    parser.add_argument('--layout', type=str, default='1', help='Layout for arranging images (e.g., "3-1-3" for rows with varying numbers of images).')
+    parser.add_argument('--layout', type=str, required=True, help='Layout for arranging images (e.g., "3-1-3" for rows with varying numbers of images).')
     parser.add_argument('--output_dir', type=str, required=False, help='Directory to save the visualizations.')
     parser.add_argument('--output_video', type=str, default=None, help='Path to save the output video file (optional).')
     parser.add_argument('--video_frame_rate', type=int, default=10, help='Frame rate for visualization and video output.')
@@ -99,21 +99,52 @@ def annotate_image(image: np.ndarray, text: str) -> np.ndarray:
 def get_filenames_from_paths(paths: List[str]) -> List[str]:
     return [Path(p).name for p in paths]
 
+def get_all_filenames(dir, no_extension=False):
+    # List all filenames in a directory, optionally without extension
+    if no_extension:
+        return [filename.split(".")[0] for filename in os.listdir(dir)]
+    return [filename for filename in os.listdir(dir)]
+
+# Data processing and batching
+def get_timestamps_from_filenames(filenames, sorted_order=True):
+    # Extract numeric timestamps from filenames
+    timestamps_set = {
+        int(filename.split(".")[0]) for filename in filenames if filename.split(".")[0].isdigit()
+    }
+    timestamps = list(timestamps_set)
+    if sorted_order:
+        timestamps = sorted(timestamps)
+    return timestamps
+
+def get_missing_timestamps(timestamps, data_dirs):
+    # Identify timestamps missing from any of the specified data directories
+    missing_timestamps = set()
+    for data_dir in data_dirs:
+        data_dir_filenames = get_all_filenames(data_dir)
+        data_dir_timestamps = get_timestamps_from_filenames(data_dir_filenames, sorted_order=False)
+        data_dir_timestamps_set = set(data_dir_timestamps)
+        for timestamp in timestamps:
+            if timestamp not in data_dir_timestamps_set:
+                missing_timestamps.add(timestamp)
+    return missing_timestamps 
+
 if __name__ == "__main__":
     args = parse_args()
     
     sensor_subdirs = args.sensor_subdirs.split(',')
+    sensor_subdir_paths = [os.path.join(args.input_dir, subdir) for subdir in sensor_subdirs]
 
-    filenames = set()
-    for subdir in sensor_subdirs:
-        subdir_path = os.path.join(args.input_dir, subdir)
+    for subdir_path in sensor_subdir_paths:
         if not os.path.isdir(subdir_path):
             raise FileNotFoundError(f"Sensor subdirectory {subdir_path} does not exist.")
-        files = glob(os.path.join(subdir_path, '*'))
-        filenames.update(get_filenames_from_paths(files))
-    print(f"Found {len(filenames)} unique files across specified sensor subdirectories.")
-    timestamps = sorted([int(filename.split(".")[0]) for filename in filenames if filename.split(".")[0].isdigit()])
+
+    filenames = get_all_filenames(sensor_subdir_paths[0])
+    timestamps = get_timestamps_from_filenames(filenames, sorted_order=True)
     print(len(timestamps), "timestamps found.")
+    missing_timestamps = get_missing_timestamps(timestamps, sensor_subdir_paths)
+    if missing_timestamps:
+        print(f"Warning: The following timestamps are missing data from one or more sensors and will be skipped: {sorted(missing_timestamps)}")
+    timestamps = [ts for ts in timestamps if ts not in missing_timestamps]
 
     layout_parts = args.layout.split('-')
     if not all(part.isdigit() for part in layout_parts):
@@ -126,8 +157,6 @@ if __name__ == "__main__":
     for i, timestamp in enumerate(timestamps):
         if i % 100 == 0:
             print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Processing frame {i+1}/{len(timestamps)}")
-            
-
         images = []
         for j, subdir in enumerate(sensor_subdirs):
             subdir_path = os.path.join(args.input_dir, subdir)
