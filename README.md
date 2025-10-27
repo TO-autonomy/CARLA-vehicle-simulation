@@ -7,7 +7,7 @@ Prediction" is based on commit [d1a6ab8](https://github.com/TO-autonomy/CARLA-ve
 
 ## System Requirements
 
-The CARLA simulation was tested with a high-end workstation. However, the recommended system specification for the CARLA simulator should also work for running the vehicle simulation. Lower system requirements could work in a limited capacity, but the simulation's stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 20.04 and Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
+The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower specifications, but the stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 20.04 and Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
 
 ### Tested System Specification
 - **Operating System:** Ubuntu 22.04 (Ubuntu 20.04 works as well)
@@ -118,6 +118,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
