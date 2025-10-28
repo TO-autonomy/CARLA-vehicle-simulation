@@ -10,7 +10,7 @@ Prediction" is based on commit [d1a6ab8](https://github.com/TO-autonomy/CARLA-ve
 The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower specifications, but the stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
 
 ### Tested System Specification
-- **Operating System:** Ubuntu 22.04 (Ubuntu 20.04 works as well)
+- **Operating System:** Ubuntu 22.04
 - **Architecture:** 64-bit
 - **Processor:** 12th Gen Intel® Core™ i9-12900K
 - **RAM:** 125.51 GB
@@ -119,6 +119,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
