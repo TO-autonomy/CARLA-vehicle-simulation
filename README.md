@@ -29,10 +29,11 @@ git clone https://github.com/TO-autonomy/CARLA-vehicle-simulation.git
 cd CARLA-vehicle-simulation
 ```
 
-Install dependencies (including the precompiled **CARLA v0.9.15** simulator):
+Setup repository and install dependencies (including the precompiled **CARLA v0.9.15** simulator):
 
 ```bash
-sh install.sh
+chmod +x *.sh
+./install.sh
 ```
 
 ---
@@ -42,7 +43,7 @@ sh install.sh
 Start the default simulation scenario:
 
 ```bash
-sh run_simulation.sh
+./run_simulation.sh
 ```
 
 This command will:
@@ -64,14 +65,14 @@ Sensor data will be saved in:
 To create a custom simulation plan, run:
 
 ```bash
-sh make_simulation.sh custom_scenario.toml
+./make_simulation.sh custom_scenario.toml
 ```
 
 This will open the simulation planner, where you can define scenario parameters. Your configuration will be saved to `custom_scenario.toml`.  
 Then, start the simulation with:
 
 ```bash
-sh run_simulation.sh custom_scenario.toml
+./run_simulation.sh custom_scenario.toml
 ```
 
 The simulation will use your custom configuration and generate sensor data for that scenario.
@@ -81,14 +82,14 @@ The simulation will use your custom configuration and generate sensor data for t
 To create a simulation based on a recorded driving path, run:
 
 ```bash
-sh make_simulation.sh recording.rec
+./make_simulation.sh recording.rec
 ```
 
 This launches the simulation recorder, allowing you to control an ego vehicle and record the entire simulation scenario (all actors and events will be saved to `recording.rec`). 
 Then, run the recording with:
 
 ```bash
-sh run_simulation.sh recording.rec
+./run_simulation.sh recording.rec
 ```
 
 The system will replay your recording and generate sensor data for that scenario.
