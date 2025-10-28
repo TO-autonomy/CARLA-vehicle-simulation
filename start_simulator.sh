@@ -15,7 +15,7 @@ if [ -z "$SERVER_PID" ]; then
     echo "CARLA simulator is not running."
     echo "Starting server..."
     # Start server script and redirect only stdout to /dev/null
-    sh "$SERVER_SCRIPT" > /dev/null &
+    bash "$SERVER_SCRIPT" > /dev/null &
     sleep $SERVER_BOOT_TIME
 else
     echo "CARLA simulator is already running. (PID: $SERVER_PID)"
@@ -25,7 +25,7 @@ else
         kill -9 "$SERVER_PID"
         sleep 2
         # Start server script and redirect only stdout to /dev/null
-        sh "$SERVER_SCRIPT" > /dev/null &
+        bash "$SERVER_SCRIPT" > /dev/null &
         sleep $SERVER_BOOT_TIME
     fi
 fi

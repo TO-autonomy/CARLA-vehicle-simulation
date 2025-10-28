@@ -17,7 +17,7 @@ echo "========================================"
 export PYTHONPATH="$PYTHONPATH:$SIMULATOR_DIR/PythonAPI/carla"
 
 # Start CARLA server
-sh $CURRENT_DIR/start_simulator.sh
+bash $CURRENT_DIR/start_simulator.sh
 
 echo "==="
 

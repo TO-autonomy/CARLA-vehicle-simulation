@@ -14,7 +14,7 @@ echo "CARLA simulation maker"
 echo "========================================"
 
 # Start CARLA server
-sh $CURRENT_DIR/start_simulator.sh
+bash $CURRENT_DIR/start_simulator.sh
 
 echo "==="
 
