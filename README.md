@@ -1,4 +1,4 @@
-# CARLA vehicle simulation (CARLA v0.9.15)
+# CARLA vehicle simulation (CARLA v0.9.16)
 
 This guide provides instructions for setting up and running a vehicle simulation in the CARLA simulator to generate synthetic sensor data. The simulation software records sensor information for six cameras and a LiDAR sensor. The sensors are positioned to mimic NuScenes dataset sensor setup. 
 
@@ -7,7 +7,7 @@ Prediction" is based on commit [d1a6ab8](https://github.com/TO-autonomy/CARLA-ve
 
 ## System Requirements
 
-The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower specifications, but the stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 20.04 and Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
+The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower specifications, but the stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
 
 ### Tested System Specification
 - **Operating System:** Ubuntu 22.04 (Ubuntu 20.04 works as well)
@@ -29,7 +29,7 @@ git clone https://github.com/TO-autonomy/CARLA-vehicle-simulation.git
 cd CARLA-vehicle-simulation
 ```
 
-Setup repository and install dependencies (including the precompiled **CARLA v0.9.15** simulator):
+Setup repository and install dependencies (including the precompiled **CARLA v0.9.16** simulator):
 
 ```bash
 chmod +x *.sh
@@ -119,6 +119,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
