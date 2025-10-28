@@ -1,6 +1,4 @@
-echo "========================================"
-echo "CARLA vehicle simulation"
-echo "========================================"
+#!/bin/bash
 
 ## Set the script to fail if any command fails
 set -e
@@ -10,6 +8,10 @@ CURRENT_DIR=$(pwd)
 SOURCE_DIR=$CURRENT_DIR/src
 SIMULATOR_DIR=$SOURCE_DIR/CARLASimulator
 INPUT_FILE=${1:-$SOURCE_DIR/config/scenarios/town10.scenario1.toml} # Default scenario file if none provided
+
+echo "========================================"
+echo "CARLA vehicle simulation"
+echo "========================================"
 
 # Add CARLA PythonAPI to PYTHONPATH
 export PYTHONPATH="$PYTHONPATH:$SIMULATOR_DIR/PythonAPI/carla"

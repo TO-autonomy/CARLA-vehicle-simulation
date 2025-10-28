@@ -1,6 +1,4 @@
-echo "========================================"
-echo "CARLA simulation maker"
-echo "========================================"
+#!/bin/bash
 
 ## Set the script to fail if any command fails
 set -e
@@ -10,6 +8,10 @@ CURRENT_DIR=$(pwd)
 SOURCE_DIR=$CURRENT_DIR/src
 SIMULATOR_DIR=$SOURCE_DIR/CARLASimulator
 OUTPUT_FILE=${1:-$SOURCE_DIR/config/scenarios/new_scenario.toml} # Default scenario file if none provided
+
+echo "========================================"
+echo "CARLA simulation maker"
+echo "========================================"
 
 # Start CARLA server
 sh $CURRENT_DIR/start_simulator.sh
