@@ -7,19 +7,40 @@ Prediction" is based on commit [d1a6ab8](https://github.com/TO-autonomy/CARLA-ve
 
 ## System Requirements
 
-The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower specifications, but the stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
+The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower system specifications, but the stability and effectiveness are unknown. **Software and Hardware requirements need to be fulfilled**!
+
+### Hardware Requirements
+- **NVIDIA GPU**: VRAM >= 8GB (NVIDIA drivers need to be installed and working)
+
+### Software Requirements
+- **OS**: Ubuntu 22.04 (other versions not tested; Windows and other OS systems do not work)
+- **Python Version**: 3.10 / 3.11 (CARLA Python library requirement)
 
 ### Tested System Specification
 - **Operating System:** Ubuntu 22.04
 - **Architecture:** 64-bit
 - **Processor:** 12th Gen Intel® Core™ i9-12900K
 - **RAM:** 125.51 GB
-- **Python Version:** 3.8.10
+- **Python Version:** 3.10
 - **GPU:** NVIDIA GeForce RTX 4090
 - **Storage:** SSD with at least 20 GB of free space
 
 ---
 
+## Environment Setup (highly recommended)
+
+We recommend using Conda to manage the Python environment for this project. Conda installation guide can be found here: [Miniconda installer (recommended)](https://www.anaconda.com/docs/getting-started/miniconda/install#linux-2).
+
+After installing Conda create and activate a new environment:
+
+```bash
+conda create -n carla-env python=3.11 -y
+conda activate carla-env
+```
+
+Other environment tools like pyenv and virtualenv should be fine. The key requirement is that the running Python version is 3.10 or 3.11. Once the environment is active, continue with the installation steps below.
+
+---
 ## Installation
 
 Clone the CARLA vehicle simulation repository:
