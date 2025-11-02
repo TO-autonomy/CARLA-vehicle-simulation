@@ -10,7 +10,7 @@ SERVER_BOOT_TIME=10 # Time to wait for the server to boot up (in seconds); Can b
 
 
 echo "Checking if the CARLA simulator is running..."
-SERVER_PID=$(pgrep -af "$SERVER_SCRIPT_BASENAME" | grep -v "$0" | awk '{print $1}')
+SERVER_PID=$(pgrep -af "$SERVER_SCRIPT_BASENAME" | grep -v "$0" | awk '{print $1}' | tail -n 1)
 if [ -z "$SERVER_PID" ]; then
     echo "CARLA simulator is not running."
     echo "Starting server..."
