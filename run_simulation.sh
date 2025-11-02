@@ -36,7 +36,8 @@ elif [ "$FILE_EXTENSION" = "rec" ]; then
         --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
         --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
         --recording $INPUT_FILE \
-        --output_dir $CURRENT_DIR/generated_data
+        --output_dir $CURRENT_DIR/generated_data \
+        --weather "ClearNight" # Availble weather presets: ClearNight, ClearNoon, ClearSunset, CloudyNight, CloudyNoon, CloudySunset, Default, DustStorm, HardRainNight, HardRainNoon, HardRainSunset, MidRainSunset, MidRainyNight, MidRainyNoon, SoftRainNight, SoftRainNoon, SoftRainSunset, WetCloudyNight, WetCloudyNoon, WetCloudySunset, WetNight, WetNoon, WetSunset
 else
     echo "Error: Unsupported file type. Please provide a .toml or .rec file."
     exit 1
