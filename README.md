@@ -21,7 +21,7 @@ The CARLA simulation was tested with a high-end workstation. The pipeline should
 - **Architecture:** 64-bit
 - **Processor:** 12th Gen Intel® Core™ i9-12900K
 - **RAM:** 125.51 GB
-- **Python Version:** 3.10
+- **Python Version:** 3.11
 - **GPU:** NVIDIA GeForce RTX 4090
 - **Storage:** SSD with at least 20 GB of free space
 
@@ -140,6 +140,7 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
 
 
 
