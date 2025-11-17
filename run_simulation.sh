@@ -1,6 +1,4 @@
-echo "========================================"
-echo "CARLA vehicle simulation"
-echo "========================================"
+#!/bin/bash
 
 ## Set the script to fail if any command fails
 set -e
@@ -11,11 +9,15 @@ SOURCE_DIR=$CURRENT_DIR/src
 SIMULATOR_DIR=$SOURCE_DIR/CARLASimulator
 INPUT_FILE=${1:-$SOURCE_DIR/config/scenarios/town10.scenario1.toml} # Default scenario file if none provided
 
+echo "========================================"
+echo "CARLA vehicle simulation"
+echo "========================================"
+
 # Add CARLA PythonAPI to PYTHONPATH
 export PYTHONPATH="$PYTHONPATH:$SIMULATOR_DIR/PythonAPI/carla"
 
 # Start CARLA server
-sh $CURRENT_DIR/start_simulator.sh
+bash $CURRENT_DIR/start_simulator.sh
 
 echo "==="
 
@@ -34,7 +36,8 @@ elif [ "$FILE_EXTENSION" = "rec" ]; then
         --ego_vehicle_extrinsics $SOURCE_DIR/config/carla_extrinsics.urdf \
         --ego_vehicle_intrinsics $SOURCE_DIR/config/carla_intrinsics.json \
         --recording $INPUT_FILE \
-        --output_dir $CURRENT_DIR/generated_data
+        --output_dir $CURRENT_DIR/generated_data \
+        --weather "ClearNoon" # Availble weather presets: ClearNight, ClearNoon, ClearSunset, CloudyNight, CloudyNoon, CloudySunset, Default, DustStorm, HardRainNight, HardRainNoon, HardRainSunset, MidRainSunset, MidRainyNight, MidRainyNoon, SoftRainNight, SoftRainNoon, SoftRainSunset, WetCloudyNight, WetCloudyNoon, WetCloudySunset, WetNight, WetNoon, WetSunset
 else
     echo "Error: Unsupported file type. Please provide a .toml or .rec file."
     exit 1

@@ -1,4 +1,4 @@
-# CARLA vehicle simulation (CARLA v0.9.15)
+# CARLA vehicle simulation (CARLA v0.9.16)
 
 This guide provides instructions for setting up and running a vehicle simulation in the CARLA simulator to generate synthetic sensor data. The simulation software records sensor information for six cameras and a LiDAR sensor. The sensors are positioned to mimic NuScenes dataset sensor setup. 
 
@@ -7,19 +7,40 @@ Prediction" is based on commit [d1a6ab8](https://github.com/TO-autonomy/CARLA-ve
 
 ## System Requirements
 
-The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower specifications, but the stability and effectiveness are unknown. **NB! The system was developed for Ubuntu 20.04 and Ubuntu 22.04 version. Windows or other OS systems are expected to cause issues during setup or simulation.**
+The CARLA simulation was tested with a high-end workstation. The pipeline should work with lower system specifications, but the stability and effectiveness are unknown. **Software and Hardware requirements need to be fulfilled**!
+
+### Hardware Requirements
+- **NVIDIA GPU**: VRAM >= 8GB (NVIDIA drivers need to be installed and working)
+
+### Software Requirements
+- **OS**: Ubuntu 22.04 (other versions not tested; Windows and other OS systems do not work)
+- **Python Version**: 3.10 / 3.11 (CARLA Python library requirement)
 
 ### Tested System Specification
-- **Operating System:** Ubuntu 22.04 (Ubuntu 20.04 works as well)
+- **Operating System:** Ubuntu 22.04
 - **Architecture:** 64-bit
 - **Processor:** 12th Gen Intel® Core™ i9-12900K
 - **RAM:** 125.51 GB
-- **Python Version:** 3.8.10
+- **Python Version:** 3.11
 - **GPU:** NVIDIA GeForce RTX 4090
 - **Storage:** SSD with at least 20 GB of free space
 
 ---
 
+## Environment Setup (highly recommended)
+
+We recommend using Conda to manage the Python environment for this project. Conda installation guide can be found here: [Miniconda installer (recommended)](https://www.anaconda.com/docs/getting-started/miniconda/install#linux-2).
+
+After installing Conda create and activate a new environment:
+
+```bash
+conda create -n carla-env python=3.11 -y
+conda activate carla-env
+```
+
+Other environment tools like pyenv and virtualenv should be fine. The key requirement is that the running Python version is 3.10 or 3.11. Once the environment is active, continue with the installation steps below.
+
+---
 ## Installation
 
 Clone the CARLA vehicle simulation repository:
@@ -29,10 +50,11 @@ git clone https://github.com/TO-autonomy/CARLA-vehicle-simulation.git
 cd CARLA-vehicle-simulation
 ```
 
-Install dependencies (including the precompiled **CARLA v0.9.15** simulator):
+Setup repository and install dependencies (including the precompiled **CARLA v0.9.16** simulator):
 
 ```bash
-sh install.sh
+chmod +x *.sh
+./install.sh
 ```
 
 ---
@@ -42,7 +64,7 @@ sh install.sh
 Start the default simulation scenario:
 
 ```bash
-sh run_simulation.sh
+./run_simulation.sh
 ```
 
 This command will:
@@ -64,14 +86,14 @@ Sensor data will be saved in:
 To create a custom simulation plan, run:
 
 ```bash
-sh make_simulation.sh custom_scenario.toml
+./make_simulation.sh custom_scenario.toml
 ```
 
 This will open the simulation planner, where you can define scenario parameters. Your configuration will be saved to `custom_scenario.toml`.  
 Then, start the simulation with:
 
 ```bash
-sh run_simulation.sh custom_scenario.toml
+./run_simulation.sh custom_scenario.toml
 ```
 
 The simulation will use your custom configuration and generate sensor data for that scenario.
@@ -81,14 +103,14 @@ The simulation will use your custom configuration and generate sensor data for t
 To create a simulation based on a recorded driving path, run:
 
 ```bash
-sh make_simulation.sh recording.rec
+./make_simulation.sh recording.rec
 ```
 
 This launches the simulation recorder, allowing you to control an ego vehicle and record the entire simulation scenario (all actors and events will be saved to `recording.rec`). 
 Then, run the recording with:
 
 ```bash
-sh run_simulation.sh recording.rec
+./run_simulation.sh recording.rec
 ```
 
 The system will replay your recording and generate sensor data for that scenario.
@@ -118,6 +140,9 @@ To enable it:
 With visualization enabled, the outputs from the **front cameras** and **LiDAR** are rendered and saved in the specified target folder.
 
 ---
+
+
+
 
 
 

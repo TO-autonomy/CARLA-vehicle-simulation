@@ -1423,15 +1423,14 @@ def get_simulation_parameters():
     map_index = int(input(f"Select a town (1-{len(maps)}): ")) - 1
     map_name = maps[map_index]
 
-    # Select weather conditions available in CARLA 0.9.15
-    # Reference: https://carla.readthedocs.io/en/0.9.15/core-concepts/weather/
-    weathers = find_weather_presets()
-    weathers = [preset[1] for preset in weathers]
-    print("Available Weather Conditions:")
-    for i, weather in enumerate(weathers):
-        print(f"{i + 1}. {weather}")
-    weather_index = int(input(f"Select weather (1-{len(weathers)}): ")) - 1
-    weather = weathers[weather_index]
+    # weathers = find_weather_presets()
+    # weathers = [preset[1] for preset in weathers]
+    # print("Available Weather Conditions:")
+    # for i, weather in enumerate(weathers):
+    #     print(f"{i + 1}. {weather}")
+    # weather_index = int(input(f"Select weather (1-{len(weathers)}): ")) - 1
+    # weather = weathers[weather_index]
+    weather = "ClearNoon"  # Default weather
 
     # Number of AI vehicles
     ai_vehicles = int(input("Enter the number of AI controlled vehicles (default=0): ") or 0)

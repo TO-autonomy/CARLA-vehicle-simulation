@@ -317,6 +317,7 @@ def main():
     parser.add_argument('--ego_vehicle_extrinsics', type=str, required=True, help='Path to the URDF file for the vehicle')
     parser.add_argument('--ego_vehicle_intrinsics', type=str, required=True, help='Path to the JSON file with camera intrinsics')
     parser.add_argument('--output_dir', type=str, required=True, help='Directory to save the sensor data')
+    parser.add_argument('--weather', type=str, default='ClearNoon', help='Weather preset for the simulation')
     args = parser.parse_args()
 
     recording_path = os.path.abspath(str(args.recording))
@@ -331,6 +332,22 @@ def main():
     if not os.path.exists(intrinsics_path):
         print(f"Error: Intrinsics file {intrinsics_path} does not exist.")
         return 1
+    
+    def find_weather_presets():
+        rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
+        name = lambda x: ' '.join(m.group(0) for m in rgx.finditer(x))
+        presets = [x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)]
+        return [(getattr(carla.WeatherParameters, x), name(x)) for x in presets]
+    
+    weathers = find_weather_presets()
+    weather_preset = args.weather
+    for preset, name in weathers:
+        if name.replace(" ", "") == weather_preset:
+            weather_preset = preset
+            break
+    else:
+        print(f"Warning: Weather preset '{args.weather}' not found. Using default 'ClearNoon'.")
+        weather_preset = carla.WeatherParameters.ClearNoon
     
     print(f"Replaying recording: {recording_path}")
     print(f"Output directory: {args.output_dir}")
@@ -361,6 +378,7 @@ def main():
     
     for sensor_name in sensor_configs:
         client.load_world(map_name, reset_settings=False) # client.load_world(map_name, reset_settings=False) # Reload the world to ensure it is in a clean state
+        world.set_weather(weather_preset)
         for i in range(3000):
             world.tick()  # Ensure the world is updated before proceeding
             # time.sleep(0.1)  # Wait for the world to stabilize

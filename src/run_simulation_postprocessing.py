@@ -493,7 +493,11 @@ def get_visible_voxels_point_cloud(point_cloud, cameras):
 
 def process_data(timestamp):
     # Main per-frame processing function
+    
+    # Load LiDAR transform for current timestamp as a reference frame
     lidar_transform = np.load(os.path.join(SOURCE_DIR, LIDAR_DIR, f"{timestamp}.npy"))
+    
+    # Process depth and semantic camera outputs for current timestamp and generate semantic point cloud
     depth_cameras = []
     depth_point_cloud = o3d.geometry.PointCloud()
     for (SEM_DIR, DEPTH_DIR, CAM_DIR) in zip(SEMANTIC_CAM_DIRS, DEPTH_CAM_DIRS, CAM_DIRS):
@@ -512,6 +516,13 @@ def process_data(timestamp):
         point_cloud.transform(depth_camera_transform)
         depth_point_cloud += point_cloud
     depth_point_cloud.transform(np.linalg.inv(lidar_transform))
+    
+    # Remove vehicle points from point cloud using bounding box
+    chassis_bbox = o3d.geometry.AxisAlignedBoundingBox(min_bound=(-0.75, -1.5, -2.0), max_bound=(0.75, 1.5, 1.0))
+    indices = chassis_bbox.get_point_indices_within_bounding_box(depth_point_cloud.points)
+    depth_point_cloud = depth_point_cloud.select_by_index(indices, invert=True)
+
+    # Continue processing point cloud to generate BEV maps and visibility masks
     ground_point_cloud = get_ground_from_semantic_point_cloud(depth_point_cloud)
     ground_point_cloud = ground_point_cloud.voxel_down_sample(GRID_RESOLUTION)
     obstacles_point_cloud = get_obstacles_from_semantic_point_cloud(depth_point_cloud)
